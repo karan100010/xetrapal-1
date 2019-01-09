@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
-from distutils.core import setup
+from setuptools  import setup
 setup(
   name = 'xetrapal',         # How you named your package folder (MyLib)
   packages = ['xetrapal'],   # Chose the same as "name"
