@@ -1,5 +1,12 @@
 # xetrapal (क्षेत्रपाल)
+
+## What it is
 हिन्दी एवं अन्य भारतीय भाशाओं में इंटरनेट से सामग्री को साझा करने एवं स्वतंत्र रूप से विश्लेषण करने के उपकरण
 
 Orchestration and automation framework for web based task work, data analysis and mining, particularly in Indic languages
 
+## Why it's needed 
+With growing social media, everyone needs automation to keep up with the barrage of data coming at us. Xetrapal can help. 
+
+## Who is maintaining
+हैकरgram Residents in Almora, Uttarakhand, India (listener at hackergram dot org)
