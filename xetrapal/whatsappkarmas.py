@@ -1,5 +1,5 @@
 '''
-यहां हम फेसबुक सम्बन्धी अस्त्रों का उल्लेख करेंगे
+यहां हम whatsnstall  सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
 import astra
@@ -14,7 +14,7 @@ import os
 
 
 def reply_random(browser, logger=astra.baselogger):
-    text = os.popen("fortune -o").read().strip()
+    text = os.popen("fortune").read().strip()
     send_text(text)
 
 
