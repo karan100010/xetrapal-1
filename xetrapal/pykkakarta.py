@@ -31,7 +31,7 @@ class Karta(pykka.ThreadingActor):
                 self.jeeva.logger.error(repr(e))
         if message['msg'] == "get":
             self.jeeva.logger.info(
-                "Trying to get a return value from " + str(message['func']))
+               "Trying to get a return value from " + str(message['func']))
             try:
                 returnvalue = message['func'](
                     *message['args'], **message['kwargs'])

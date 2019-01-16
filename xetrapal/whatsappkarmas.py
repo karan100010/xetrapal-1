@@ -1,5 +1,7 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 '''
-यहां हम whatsnstall  सम्बन्धी अस्त्रों का उल्लेख करेंगे
+यहां हम whatsapp सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
 import astra
@@ -15,11 +17,11 @@ import os
 
 def reply_random(browser, logger=astra.baselogger):
     text = os.popen("fortune").read().strip()
-    send_text(text)
+    send_text(browser, text)
 
 
 def send_text(browser, text, logger=astra.baselogger):
-    logger.info("")
+    logger.info("Sending message {}".format(text))
     textfield = browser.find_elements_by_class_name("_2S1VP")
     t = textfield[-1]
     t.click()
