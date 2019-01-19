@@ -13,3 +13,10 @@ class Aadesh(object):
         self.func = None
         self.args = []
         self.kwargs = {}
+
+    def __repr__(self):
+        attrs = []
+        for name in self.__dict__.keys():
+            value = getattr(self, name)
+            attrs.append('\n    {} = {!r},'.format(name, value))
+        return '\n{}: {}\n'.format(type(self).__name__, ''.join(attrs))

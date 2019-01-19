@@ -1,5 +1,6 @@
 # coding: utf-8
 import time
+import datetime
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 '''
@@ -42,7 +43,7 @@ def fb_search(fbbrowser, searchstring, logger=astra.baselogger):
     time.sleep(10)
 
 
-def fb_get_postlinks_from_timeline(fbbrowser, url="https://facebook.com", count=10, logger=astra.baselogger):
+def fb_get_posts_from_timeline(fbbrowser, url="https://facebook.com", count=10, logger=astra.baselogger):
     fbbrowser.get(url)
     karma.wait()
     postlinks = []
@@ -55,18 +56,105 @@ def fb_get_postlinks_from_timeline(fbbrowser, url="https://facebook.com", count=
         for post in posts:
             postcontents.append(BeautifulSoup(post.get_property("innerHTML")))
         for postcontent in postcontents:
-
             pc = list(postcontent.find_all("a", {"class": "_5pcq"}))
             if len(pc) > 0:
                 pc = pc[0]
             else:
                 continue
             url = "https://facebook.com" + pc.get("href")
-            postlinks.append(url)
+            logger.info("Logging post at {}".format(
+                pc.find("abbr").get("title")))
+            postlink = {}
+            postlink['text'] = postcontent.text
+            postlink['url'] = url
+            postlink['timestamp'] = datetime.datetime.strptime(
+                pc.find("abbr").get("title"), "%d/%m/%Y, %H:%M")
+            if url not in [pl['url'] for pl in postlinks]:
+                postlinks.append(postlink)
         logger.info("Got %s posts " % (len(postlinks)))
-        postlinks = list(set(postlinks))
+        # postlinks = list(set(postlinks))
         if "https://facebook.com#" in postlinks:
             postlinks.pop(postlinks.index("https://facebook.com#"))
         karma.scroll_page(fbbrowser)
         karma.wait()
     return postlinks[:count]
+
+
+def fb_get_profile_data(fbbrowser, url, logger=astra.baselogger):
+    profiledata = {}
+    profilepic = {}
+    fbbrowser.get(url)
+    karma.wait()
+    profile = fbbrowser.current_url
+
+    if profile == "http://www.facebook.com/profile.php":
+        plink = fbbrowser.find_element_by_xpath("//a[@title='Profile']")
+        profile = plink.get_attribute("href")
+
+    profiledata['url'] = profile
+    # plink=fbbrowser.find_element_by_xpath("//a[@title='Profile']")
+
+    profiledata['fbdisplayname'] = fb_get_cur_page_displayname(fbbrowser)
+
+    fbbrowser.find_element_by_class_name("profilePic").click()
+    time.sleep(10)
+    '''
+    try:
+        profilepic['alttext'] = fbbrowser.find_element_by_class_name(
+            "spotlight").get_property("alt")
+        profilepic['src'] = fbbrowser.find_element_by_class_name(
+            "spotlight").get_property("src")
+        profilepic['profileguard'] = False
+    except Exception as e:
+        logger.error("{} {}".format(type(e), str(e)))
+        profilepic['alttext'] = fbbrowser.find_element_by_class_name(
+            "profilePicThumb").get_property("alt")
+        profilepic['src'] = fbbrowser.find_element_by_class_name(
+            "profilePic").get_property("src")
+        profilepic['profileguard'] = True
+    try:
+        localfile = karma.download_file(
+            profilepic['src'], prefix=profiledata['fbdisplayname'].replace(" ", ""), suffix=".jpg")
+        profilepic['localfile'] = localfile
+
+    except Exception as e:
+        logger.error("Failed to download {} {}".format(type(e), str(e)))
+    '''
+    profiledata['tabdata'] = fb_get_profile_tab_data(fbbrowser, url)
+    profiledata['friendcount'] = profiledata['tabdata']['friends']['count']
+    profiledata['profilepic'] = profilepic
+    return profiledata
+
+
+def fb_get_profile_tab_data(fbbrowser, profileurl):
+    tabdata = {"friends": {}, "photos": {}, "about": {}}
+    fbbrowser.get(profileurl)
+    time.sleep(5)
+    phototab = fbbrowser.find_element_by_xpath(
+        "//a[@data-tab-key='photos']").get_property("href")
+    friendtab = fbbrowser.find_element_by_xpath(
+        "//a[@data-tab-key='friends']").get_property("href")
+    abouttab = fbbrowser.find_element_by_xpath(
+        "//a[@data-tab-key='about']").get_property("href")
+    tabdata['friends']['url'] = friendtab
+    if fbbrowser.find_element_by_xpath("//a[@data-tab-key='friends']").get_property("text").replace("Friends", "") != "" and "Mutual" not in fbbrowser.find_element_by_xpath("//a[@data-tab-key='friends']").get_property("text"):
+        tabdata['friends']['count'] = int(fbbrowser.find_element_by_xpath(
+            "//a[@data-tab-key='friends']").get_property("text").replace("Friends", ""))
+    else:
+        tabdata['friends']['count'] = -1
+    tabdata['photos']['url'] = phototab
+    tabdata['about']['url'] = abouttab
+    return tabdata
+
+
+def fb_get_cur_page_displayname(fbbrowser):
+    displayname = fbbrowser.find_element_by_id(
+        "fb-timeline-cover-name").find_element_by_tag_name("a").text
+    return displayname
+
+
+def fb_like_page_toggle(fbbrowser, pageurl):
+    fbbrowser.get(pageurl)
+    likebutton = fbbrowser.find_element_by_xpath(
+        "//button[@data-testid='page_profile_like_button_test_id']")
+    likebutton.click()

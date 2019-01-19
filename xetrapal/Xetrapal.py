@@ -9,6 +9,7 @@ import colored
 import twastras
 import gdastras
 import smsastras
+import aadesh
 
 # import gdkarmas
 import pykkakarta
@@ -17,7 +18,6 @@ import os
 import telegramastras
 # import telegramkarmas
 # import thespiankarta
-
 
 
 class Xetrapal(jeeva.Jeeva):
@@ -73,24 +73,28 @@ class Xetrapal(jeeva.Jeeva):
         self.update_astras()
         return droppedastra
 
-    def aadesh(self,message):
-        self.jeeva.logger.info("Received message " + str(message))
-        if message['msg'] == "run":
-            self.jeeva.logger.info("Trying to run " + str(message['func']))
-            # message['kwargs']['logger']=self.jeeva.logger
-            try:
-                message['func'](*message['args'], **message['kwargs'])
-            except Exception as e:
-                self.jeeva.logger.error(repr(e))
-        if message['msg'] == "get":
-            self.jeeva.logger.info(
-                "Trying to get a return value from " + str(message['func']))
-            try:
-                returnvalue = message['func'](
-                    *message['args'], **message['kwargs'])
-                return returnvalue
-            except Exception as e:
-                return repr(e)
+    def get_aadesh(self, message):
+        if isinstance(message, (aadesh.Aadesh)):
+            self.logger.info("Received Aadesh " + str(message))
+            if message.msg == "run":
+                self.logger.info("Trying to run " + str(message.func))
+                # message['kwargs']['logger']=self.jeeva.logger
+                try:
+                    message.kwargs['logger'] = self.logger
+                    message.func(*message.args, **message.kwargs)
+                except Exception as e:
+                    self.jeeva.logger.error(repr(e))
+            if message.msg == "get":
+                self.logger.info(
+                    "Trying to get a return value from " + str(message.func))
+                try:
+                    # message.kwargs['logger'] = self.logger
+                    returnval = message.func(*message.args, **message.kwargs)
+                    self.logger.info("Got value {}".format(returnval))
+                    return returnval
+                except Exception as e:
+                    self.logger.error(repr(e))
+                    return repr(e)
 
     def start_pykka_karta(self):
         kartaref = pykkakarta.Karta.start(jeeva=self)
