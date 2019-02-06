@@ -106,7 +106,7 @@ baselogger = get_xpal_logger("Xpal-Sutradhar")
 # Getting a browser that lets us do browser based tasks
 
 
-def get_browser(headless=False, logger=baselogger):
+def get_browser(headless=False, download_dir=None, logger=baselogger):
     logger.info("Launching a browser....")
     if headless is True:
         logger.info("...which has no head")
@@ -114,11 +114,12 @@ def get_browser(headless=False, logger=baselogger):
 
     firefox_profile = webdriver.FirefoxProfile()
     firefox_profile.set_preference("browser.privatebrowsing.autostart", True)
-    # firefox_profile.set_preference("browser.download.dir", self.sessiondownloadpath);
+    if download_dir is not None:
+        firefox_profile.set_preference("browser.download.dir", download_dir)
     firefox_profile.set_preference("browser.download.folderList", 2)
     firefox_profile.set_preference(
         "browser.download.manager.showWhenStarting", False)
     firefox_profile.set_preference(
-        "browser.helperApps.neverAsk.saveToDisk", "text/plain, text/csv",)
+        "browser.helperApps.neverAsk.saveToDisk", "text/plain, text/csv, image/jpeg, image/jpg",)
     driver = webdriver.Firefox(firefox_profile=firefox_profile)
     return driver

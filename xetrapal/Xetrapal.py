@@ -101,6 +101,10 @@ class Xetrapal(jeeva.Jeeva):
         self.kartarefs.append(kartaref)
         return kartaref
 
+    def get_browser(self):
+        browser = astra.get_browser(download_dir=self.sessiondownloadpath, logger=self.logger)
+        return browser
+
     def get_fb_browser(self, fbconfig=None):
         if fbconfig is None:
             if "Facebook" in self.config.sections():
