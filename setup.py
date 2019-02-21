@@ -26,4 +26,4 @@ setup(
   ],
 )
 op=os.popen("sudo -H pip install -r requirements.txt").read()
-print op
+print(op)
