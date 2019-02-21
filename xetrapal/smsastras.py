@@ -5,9 +5,9 @@ Created on Wed Jan  2 13:41:18 2019
 
 @author: arjunvenkatraman
 """
-import urllib2
+from urllib.request import Request, urlopen
 import json
-import astra
+from . import astra
 
 payload = {"message": "", "recipients": []}
 recipient = {"type": "mobile", "value": ""}
@@ -30,10 +30,10 @@ class XPalFrontlineSMS(object):
         data = {}
         data['apiKey'] = self.apikey
         data['payload'] = smsdict
-        req = urllib2.Request(self.url)
+        req = Request(self.url)
         req.add_header('Content-Type', 'application/json')
         try:
-            response = json.loads(urllib2.urlopen(req, json.dumps(data)).read())
+            response = json.loads(urlopen(req, json.dumps(data)).read())
             if response['message'] == "success":
                 self.logger.info("Got response {}".format(response))
             else:

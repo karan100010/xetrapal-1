@@ -1,6 +1,6 @@
 # coding: utf-8
 # from .aadhaar import
-import jeeva
+from . import jeeva
 import colored
 
 

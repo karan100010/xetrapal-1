@@ -6,7 +6,7 @@ Created on Wed Jun  6 00:31:18 2018
 @author: ananda
 """
 
-import astra
+from . import astra
 import os
 import json
 # from telegram.ext import MessageHandler, Filters

@@ -3,9 +3,9 @@
 यहां हम फेसबुक सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
-import astra
+from . import astra
 import colored
-import karma
+from . import karma
 import pandas
 import datetime
 import math

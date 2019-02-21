@@ -4,10 +4,8 @@
 यहां हम whatsapp सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
-import astra
-import urllib2
-import json
-import karma
+from . import astra
+from . import karma
 import os
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
@@ -81,7 +79,6 @@ def select_conv(wabrowser, text, logger=astra.baselogger):
     convnames = []
     while True:
         m = len(convnames)
-        print m
         recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
         for conv in recentList:
             try:

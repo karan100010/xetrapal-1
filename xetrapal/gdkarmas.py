@@ -3,9 +3,9 @@
 यहां हम फेसबुक सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
-import astra
-import urllib2
-import json
+from . import astra
+from urllip.request import urlopen
+from . import json
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
 # Get value Astras, to be run with {'msg':'get','func':function_object,'args':(),'kwargs':{}}
@@ -77,7 +77,7 @@ def get_sheet_last_row(ssheet, sheetname):
 
 
 def get_json_feed(feedurl):
-    response = urllib2.urlopen(feedurl)
+    response = urlopen(feedurl)
     data = json.load(response)
     return data
 

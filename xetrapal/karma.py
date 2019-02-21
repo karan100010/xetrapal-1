@@ -8,7 +8,7 @@ import configparser
 # Time to keep time, OS to work with Linux, and Datetime to keep track of dates
 import time
 import os
-import urllib2
+from urllib.request import urlopen
 import colored
 # JSON to store everything
 import json
@@ -17,7 +17,7 @@ from pygments import highlight, lexers, formatters
 
 from uuid import uuid4
 from .aadhaar import XPAL_WAIT_TIME
-import astra
+from . import astra
 
 
 def get_color_json(dictionary, logger=astra.baselogger):
@@ -70,7 +70,7 @@ def load_data_from_json(jsonpath, logger=astra.baselogger):
             with open(jsonpath) as f:
                 data = json.load(f)
         except Exception as e:
-            print "Failed to load file because" + str(e)
+            print("Failed to load file because" + str(e))
     return data
 
 
@@ -99,7 +99,7 @@ def download_file(url, path=None, filename=None, prefix=None, suffix=None, logge
     if suffix is not None:
         filename = filename + suffix
     try:
-        response = urllib2.urlopen(url)
+        response = urlopen(url)
         data = response.read()
         fname = os.path.join(path, filename)
         f = open(fname, "w")

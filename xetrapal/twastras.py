@@ -7,7 +7,7 @@ Created on Wed Jun  6 00:25:58 2018
 """
 
 import twython
-import astra
+from . import astra
 import colored
 import json
 import os
