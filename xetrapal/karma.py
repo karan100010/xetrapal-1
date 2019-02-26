@@ -18,6 +18,11 @@ from pygments import highlight, lexers, formatters
 from uuid import uuid4
 from .aadhaar import XPAL_WAIT_TIME
 from . import astra
+import random
+
+
+def random_of_ranges(*ranges):
+    return random.choice(random.choice(ranges))
 
 
 def get_color_json(dictionary, logger=astra.baselogger):
@@ -140,9 +145,11 @@ def close_modal(browser, logger=astra.baselogger):
 
 
 def wait(waittime="medium", logger=astra.baselogger):
+    t = XPAL_WAIT_TIME[waittime]
+    interval = random_of_ranges(range(t-5, t+2), range(t-2, t+5))
     logger.info("Waiting for a %s duration : %s seconds" %
-                (waittime, XPAL_WAIT_TIME[waittime]))
-    time.sleep(XPAL_WAIT_TIME[waittime])
+                (waittime, interval))
+    time.sleep(interval)
 
 
 def save_config(config, filename, logger=astra.baselogger):

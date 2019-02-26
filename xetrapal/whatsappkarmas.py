@@ -20,8 +20,17 @@ def get_conversations(browser, logger=astra.baselogger):
         convdict = {}
         convdict['display_name'] = conv.text.split("\n")[0]
         convdict['display_lines'] = conv.text.split("\n")
-        convdicts.append(convdict)
+        if convdict['display_name'] not in [c['display_name'] for c in convdicts] and convdict['display_name'] not in ["MESSAGES", "CHATS", "CONTACTS"]:
+            convdicts.append(convdict)
     return convdicts
+
+
+def search_conversations(wabrowser, text, logger=astra.baselogger):
+    convsearchbox = wabrowser.find_element_by_xpath("//input[@title='Search or start new chat']")
+    convsearchbox.send_keys(text)
+    karma.wait()
+    cdicts = get_conversations(wabrowser)
+    return cdicts
 
 
 def reply_random(browser, logger=astra.baselogger):
