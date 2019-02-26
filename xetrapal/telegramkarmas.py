@@ -4,9 +4,9 @@ Created on Wed Jun  6 00:31:18 2018
 @author: ananda
 """
 
-import astra
-import karma
-import os
+from . import astra
+from . import karma
+from . import os
 
 
 def poll(botname, botstop):

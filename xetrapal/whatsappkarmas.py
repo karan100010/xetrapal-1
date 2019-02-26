@@ -4,10 +4,8 @@
 यहां हम whatsapp सम्बन्धी अस्त्रों का उल्लेख करेंगे
 '''
 # from .astra import *
-import astra
-import urllib2
-import json
-import karma
+from . import astra
+from . import karma
 import os
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
@@ -22,8 +20,17 @@ def get_conversations(browser, logger=astra.baselogger):
         convdict = {}
         convdict['display_name'] = conv.text.split("\n")[0]
         convdict['display_lines'] = conv.text.split("\n")
-        convdicts.append(convdict)
+        if convdict['display_name'] not in [c['display_name'] for c in convdicts] and convdict['display_name'] not in ["MESSAGES", "CHATS", "CONTACTS"]:
+            convdicts.append(convdict)
     return convdicts
+
+
+def search_conversations(wabrowser, text, logger=astra.baselogger):
+    convsearchbox = wabrowser.find_element_by_xpath("//input[@title='Search or start new chat']")
+    convsearchbox.send_keys(text)
+    karma.wait()
+    cdicts = get_conversations(wabrowser)
+    return cdicts
 
 
 def reply_random(browser, logger=astra.baselogger):
@@ -81,7 +88,6 @@ def select_conv(wabrowser, text, logger=astra.baselogger):
     convnames = []
     while True:
         m = len(convnames)
-        print m
         recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
         for conv in recentList:
             try:

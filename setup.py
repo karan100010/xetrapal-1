@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import os
 from setuptools import setup
 #from distutils.core import setup
@@ -22,8 +22,10 @@ setup(
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: GNU General Public License v3.0',   # Again, pick a license
     'Programming Language :: Python :: 2',      #Specify which pyhton versions that you want to suppots
-    'Programming Language :: Python :: 2.7',	
+    'Programming Language :: Python :: 2.7',
   ],
 )
 op=os.popen("sudo -H pip install -r requirements.txt").read()
+print(op)
+op=os.popen("sudo -H pip3 install -r requirements.txt").read()
 print(op)

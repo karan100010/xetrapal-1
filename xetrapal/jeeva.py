@@ -1,9 +1,9 @@
 # from .aadhaar import
 import os
 from .aadhaar import XPAL_LOG_FORMAT
-import karma
+from . import karma
 # from .karma import *
-import astra
+from . import astra
 # from .astra import *
 from datetime import datetime
 import colored

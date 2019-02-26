@@ -1,21 +1,21 @@
 # coding: utf-8
 
-import astra
-import karma
-import jeeva
-import fbkarmas
-import twkarmas
+from . import astra
+from . import karma
+from . import jeeva
+from . import fbkarmas
+from . import twkarmas
 import colored
-import twastras
-import gdastras
-import smsastras
-import aadesh
+from . import twastras
+from . import gdastras
+from . import smsastras
+from . import aadesh
 
 # import gdkarmas
-import pykkakarta
+from . import pykkakarta
 import os
 # import mojomailastras
-import telegramastras
+from . import telegramastras
 # import telegramkarmas
 # import thespiankarta
 

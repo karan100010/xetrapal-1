@@ -73,7 +73,7 @@ def load_data_from_json(jsonpath):
             with open(jsonpath) as f:
                 data = json.load(f)
         except Exception as e:
-            print "Failed to load file because" + str(e)
+            print("Failed to load file because" + str(e))
     return data
 
 

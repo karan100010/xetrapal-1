@@ -1,11 +1,10 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun  6 00:31:18 2018
 
 @author: ananda
 """
-import astra
+from . import astra
 import pygsheets
 # Get a pygsheet to work with Google sheets
 
