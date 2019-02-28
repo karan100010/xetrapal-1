@@ -27,9 +27,12 @@ def get_conversations(browser, logger=astra.baselogger):
 
 def search_conversations(wabrowser, text, logger=astra.baselogger):
     convsearchbox = wabrowser.find_element_by_xpath("//input[@title='Search or start new chat']")
+    convsearchbox.clear()
     convsearchbox.send_keys(text)
     karma.wait()
     cdicts = get_conversations(wabrowser)
+    karma.wait()
+    convsearchbox.clear()
     return cdicts
 
 
