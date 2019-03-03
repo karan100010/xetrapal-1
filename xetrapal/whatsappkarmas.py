@@ -11,18 +11,38 @@ import os
 
 # Get value Astras, to be run with {'msg':'get','func':function_object,'args':(),'kwargs':{}}
 # Use
+CLASSMAP = {
+    "pane-side-back": "//span[@data-icon='back-light']",
+    "pane-side-newchat": "//div[@title='New chat']"
+}
 
+def get_conversations(wabrowser, all=False, logger=astra.baselogger):
+    conversations = []
+    pane = wabrowser.find_element_by_id("pane-side")
+    wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
+    convnames = []
 
-def get_conversations(browser, logger=astra.baselogger):
-    conversations = browser.find_elements_by_class_name("_2wP_Y")
-    convdicts = []
-    for conv in conversations:
-        convdict = {}
-        convdict['display_name'] = conv.text.split("\n")[0]
-        convdict['display_lines'] = conv.text.split("\n")
-        if convdict['display_name'] not in [c['display_name'] for c in convdicts] and convdict['display_name'] not in ["MESSAGES", "CHATS", "CONTACTS"]:
-            convdicts.append(convdict)
-    return convdicts
+    m = 0
+    newm = 1
+    while True:
+        m = len(convnames)
+        recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
+        for conv in recentList:
+            try:
+                convdict = {}
+                convdict['display_name'] = conv.text.split("\n")[0]
+                convdict['display_lines'] = conv.text.split("\n")
+                if convdict['display_name'] not in [c['display_name'] for c in conversations] and convdict['display_name'] not in ["MESSAGES", "CHATS", "CONTACTS"]:
+                    conversations.append(convdict)
+            except Exception as e:
+                logger.error(
+                    "Could not parse conversation {} {}".format(type(e), str(e)))
+                continue
+        newm = len(conversations)
+        if newm == m:
+            break
+        wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
+    return conversations
 
 
 def search_conversations(wabrowser, text, logger=astra.baselogger):
