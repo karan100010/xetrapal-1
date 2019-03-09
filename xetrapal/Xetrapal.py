@@ -5,11 +5,14 @@ from . import karma
 from . import jeeva
 from . import fbkarmas
 from . import twkarmas
+from . import wakarmas
+from . import gdkarmas
 import colored
 from . import twastras
 from . import gdastras
 from . import smsastras
 from . import aadesh
+
 
 # import gdkarmas
 from . import pykkakarta

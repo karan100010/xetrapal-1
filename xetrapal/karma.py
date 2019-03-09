@@ -16,7 +16,7 @@ import json
 from pygments import highlight, lexers, formatters
 
 from uuid import uuid4
-from .aadhaar import XPAL_WAIT_TIME
+from .aadhaar import XPAL_WAIT_TIME, XPAL_UTC_OFFSET_TIMEDELTA
 from . import astra
 import random
 
@@ -162,3 +162,13 @@ def save_config(config, filename, logger=astra.baselogger):
 def get_aadesh(msg, func, args=[], kwargs={}):
     aadesh = {'msg': msg, 'func': func, 'args': args, 'kwargs': kwargs}
     return aadesh
+
+
+def get_utc_ts(ts):
+    adjts = ts + XPAL_UTC_OFFSET_TIMEDELTA
+    return adjts
+
+
+def get_local_ts(ts):
+    adjts = ts - XPAL_UTC_OFFSET_TIMEDELTA
+    return adjts

@@ -88,7 +88,7 @@ def goto_sheet_by_key(browser, sheetkey):
 
 def goto_sheet_tab(browser, sheetname):
     for sheettab in browser.find_elements_by_class_name("docs-sheet-tab-name"):
-        print sheettab.get_property("innerHTML")
+        print(sheettab.get_property("innerHTML"))
         if sheettab.get_property("innerHTML") == sheetname:
             sheettab.click()
 

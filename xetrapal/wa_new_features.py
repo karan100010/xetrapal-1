@@ -8,6 +8,7 @@ from . import astra
 from . import karma
 from bs4 import BeautifulSoup
 import os
+import datetime
 
 
 def wa_get_images_for_users(browser, conversations, logger=astra.baselogger):
@@ -18,7 +19,7 @@ def wa_get_images_for_users(browser, conversations, logger=astra.baselogger):
         name_div = conversations[conv].find_elements_by_class_name("_3TEwt")
         if len(name_div) != 0:
             name = name_div[0].find_element_by_tag_name("span")
-           # name_=name.find_element_by_tag_name("span")
+            # name_=name.find_element_by_tag_name("span")
             name_ = name.get_attribute("title")
         else:
             name_ = "not found " + str(conv)
@@ -97,9 +98,12 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
             if msg:
                 msgts = msg.get("data-pre-plain-text").split("] ")[0].replace("[", "").replace("]", "")
                 msgsender = msg.get("data-pre-plain-text").split("] ")[1]
-                msgdict["created_timestamp"] = utils.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M %p, %m/%d/%Y"))
+                if "m" in msgts:
+                    msgdict["created_timestamp"] = karma.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M %p, %m/%d/%Y"))
+                else:
+                    msgdict["created_timestamp"] = karma.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M, %m/%d/%Y"))
                 msgdict['sender'] = {"platform": "whatsapp"}
-                if not utils.engalpha.search(msgsender):
+                if not karma.engalpha.search(msgsender):
                     msgdict['sender']['mobile_num'] = msgsender.replace(": ", "").replace(" ", "")
                     logger.info("Mobile Num: {}".format(msgdict['sender']))
                 else:
@@ -117,12 +121,12 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
                     if "blob" in image.get_attribute("src"):
                         image.click()
                         karma.wait()
-                        files = os.listdir(samvadxpal.sessiondownloadpath)
+                        files = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
                         wabrowser.find_element_by_xpath("//div[@title='Download']").click()
                         karma.wait(waittime="long")
-                        newfiles = os.listdir(samvadxpal.sessiondownloadpath)
+                        newfiles = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
                         logger.info("Downloaded file {}".format(list(set(newfiles)-set(files))[0]))
-                        msgdict['file'] = os.path.join(samvadxpal.sessiondownloadpath, list(set(newfiles)-set(files))[0])
+                        msgdict['file'] = os.path.join(wabrowser.profile.default_preferences['browser.download.dir'], list(set(newfiles)-set(files))[0])
                         karma.wait()
                         wabrowser.find_element_by_xpath("//div[@title='Close']").click()
                         karma.wait()
