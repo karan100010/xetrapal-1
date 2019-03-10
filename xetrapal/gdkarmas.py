@@ -4,7 +4,7 @@
 '''
 # from .astra import *
 from . import astra
-from urllip.request import urlopen
+from urllib.request import urlopen
 from . import json
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
