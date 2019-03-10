@@ -6,6 +6,7 @@
 # from .astra import *
 from . import astra
 from . import karma
+from . import aadhaar
 from bs4 import BeautifulSoup
 import os
 import datetime
@@ -162,7 +163,7 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
                 else:
                     msgdict["created_timestamp"] = karma.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M, %m/%d/%Y"))
                 msgdict['sender'] = {"platform": "whatsapp"}
-                if not karma.engalpha.search(msgsender):
+                if not aadhaar.engalpha.search(msgsender):
                     msgdict['sender']['mobile_num'] = msgsender.replace(": ", "").replace(" ", "")
                     logger.info("Mobile Num: {}".format(msgdict['sender']))
                 else:
