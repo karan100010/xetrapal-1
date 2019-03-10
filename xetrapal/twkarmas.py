@@ -13,7 +13,7 @@ import math
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
 
-def twython_check_auth(tw, logger=astra.baselogger):
+def twython_check_auth(tw, logger=astra.baselogger, **kwargs):
     logger.info("Trying to check if our Twython is authenticated ...")
     try:
         creds = tw.verify_credentials()
@@ -26,7 +26,7 @@ def twython_check_auth(tw, logger=astra.baselogger):
 # Get value Astras, to be run with {'msg':'get','func':function_object,'args':(),'kwargs':{}}
 # Use
 
-def twython_search(tw, searchstring, logger=astra.baselogger, tcount=100, maxtries=10):
+def twython_search(tw, searchstring, logger=astra.baselogger, tcount=100, maxtries=10, **kwargs):
     results = []
     logger.info("Searching Twitter for " + searchstring)
     results = tw.search(q=searchstring, count=tcount,
@@ -46,7 +46,7 @@ def twython_search(tw, searchstring, logger=astra.baselogger, tcount=100, maxtri
     return results[:tcount]
 
 
-def twython_get_ntweets_for_search(tw, search, tcount, geocode=None, maxtries=0, logger=astra.baselogger):
+def twython_get_ntweets_for_search(tw, search, tcount, geocode=None, maxtries=0, logger=astra.baselogger, **kwargs):
     # tweets=[]
     p = pandas.DataFrame(tw.search(q=search, count=tcount,
                                    tweet_mode="extended")['statuses'])
@@ -85,7 +85,7 @@ def twython_get_ntweets_for_search(tw, search, tcount, geocode=None, maxtries=0,
     return tweetdf.head(tcount)
 
 
-def get_tweet_density(tw, screen_name, logger=astra.baselogger):
+def get_tweet_density(tw, screen_name, logger=astra.baselogger, **kwargs):
     last100 = tw.get_user_timeline(screen_name=screen_name, count=100)
     last100 = pandas.DataFrame(last100)
     if "created_at" in last100.columns:
@@ -106,13 +106,13 @@ def get_tweet_density(tw, screen_name, logger=astra.baselogger):
 # To move into Xetrapal
 
 
-def get_twitter_ts(string):
+def get_twitter_ts(string, **kwargs):
     return datetime.datetime.strptime(string.replace("+0000", "UTC"), "%a %b %d %H:%M:%S %Z %Y")
 
 # To move into Xetrapal
 
 
-def get_age(createdts):
+def get_age(createdts, **kwargs):
     now = datetime.datetime.now()
     age = now - createdts
     return math.ceil(age.total_seconds() / 3600)
@@ -120,7 +120,7 @@ def get_age(createdts):
 # To =move into Xetrapal
 
 
-def get_mention_density(tw, screen_name, logger=astra.baselogger):
+def get_mention_density(tw, screen_name, logger=astra.baselogger, **kwargs):
     last100 = twython_get_ntweets_for_search(tw, "@" + screen_name, tcount=100)
     last100 = pandas.DataFrame(last100)
     if "created_at" in last100.columns:

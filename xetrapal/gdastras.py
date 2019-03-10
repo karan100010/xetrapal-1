@@ -9,7 +9,7 @@ import pygsheets
 # Get a pygsheet to work with Google sheets
 
 
-def get_googledriver(config, logger=astra.baselogger):
+def get_googledriver(config=None, logger=astra.baselogger, **kwargs):
     logger.info("Trying to log into Google drive")
     try:
         gd = pygsheets.authorize(outh_file=config.get("Pygsheets", 'outhfile'),

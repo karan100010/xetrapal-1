@@ -13,9 +13,9 @@ from . import karma
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
 
-def fb_login(browser, fbconfig, logger=astra.baselogger):
-    fbusr = fbconfig.get("Facebook", "fbusername")
-    fbpwd = fbconfig.get("Facebook", "fbpassword")
+def fb_login(browser, config=None, logger=astra.baselogger, **kwargs):
+    fbusr = config.get("Facebook", "fbusername")
+    fbpwd = config.get("Facebook", "fbpassword")
     # or you can use Chrome(executable_path="/usr/bin/chromedriver")
     logger.info("Trying to log into FB in browser...")
     try:
@@ -34,7 +34,7 @@ def fb_login(browser, fbconfig, logger=astra.baselogger):
         logger.error("Could not log into FB.." + repr(exception))
 
 
-def fb_search(fbbrowser, searchstring, logger=astra.baselogger):
+def fb_search(fbbrowser, searchstring, logger=astra.baselogger, **kwargs):
     logger.info("Searching FB for " + searchstring)
     searchbar = fbbrowser.find_element_by_name("q")
     searchbar.clear()
@@ -43,7 +43,7 @@ def fb_search(fbbrowser, searchstring, logger=astra.baselogger):
     time.sleep(10)
 
 
-def fb_get_posts_from_timeline(fbbrowser, url="https://facebook.com", count=10, logger=astra.baselogger):
+def fb_get_posts_from_timeline(fbbrowser, url="https://facebook.com", count=10, logger=astra.baselogger, **kwargs):
     fbbrowser.get(url)
     karma.wait()
     postlinks = []
@@ -80,7 +80,7 @@ def fb_get_posts_from_timeline(fbbrowser, url="https://facebook.com", count=10, 
     return postlinks[:count]
 
 
-def fb_get_profile_data(fbbrowser, url, logger=astra.baselogger):
+def fb_get_profile_data(fbbrowser, url, logger=astra.baselogger, **kwargs):
     profiledata = {}
     profilepic = {}
     fbbrowser.get(url)
@@ -126,7 +126,7 @@ def fb_get_profile_data(fbbrowser, url, logger=astra.baselogger):
     return profiledata
 
 
-def fb_get_profile_tab_data(fbbrowser, profileurl):
+def fb_get_profile_tab_data(fbbrowser, profileurl, **kwargs):
     tabdata = {"friends": {}, "photos": {}, "about": {}}
     fbbrowser.get(profileurl)
     time.sleep(5)
@@ -147,13 +147,13 @@ def fb_get_profile_tab_data(fbbrowser, profileurl):
     return tabdata
 
 
-def fb_get_cur_page_displayname(fbbrowser):
+def fb_get_cur_page_displayname(fbbrowser, **kwargs):
     displayname = fbbrowser.find_element_by_id(
         "fb-timeline-cover-name").find_element_by_tag_name("a").text
     return displayname
 
 
-def fb_like_page_toggle(fbbrowser, pageurl):
+def fb_like_page_toggle(fbbrowser, pageurl, **kwargs):
     fbbrowser.get(pageurl)
     likebutton = fbbrowser.find_element_by_xpath(
         "//button[@data-testid='page_profile_like_button_test_id']")

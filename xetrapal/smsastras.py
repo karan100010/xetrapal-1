@@ -54,7 +54,7 @@ class XPalSMSTester(object):
             self.logger.info("Sent Mock SMS {} to {}".format(smsdict['message'], recipient))
 
 
-def get_sms_astra(config, logger=astra.baselogger):
+def get_sms_astra(config=None, logger=astra.baselogger, **kwargs):
         service = config.get("SMSAstra", "service")
         if service == "flsms":
             logger.info("Service is FLSMS")

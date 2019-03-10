@@ -9,7 +9,7 @@ from . import karma
 from . import os
 
 
-def poll(botname, botstop):
+def poll(botname, botstop, **kwargs):
     while True:
         if not os.path.exists(botstop):
             botname.logger.info(
@@ -34,7 +34,7 @@ def poll(botname, botstop):
             break
 
 
-def messageparser(bot, update, handler=None, logger=astra.baselogger):
+def messageparser(bot, update, handler=None, logger=astra.baselogger, **kwargs):
     if update.message:
         logger.info(u"This looks like a message")
 

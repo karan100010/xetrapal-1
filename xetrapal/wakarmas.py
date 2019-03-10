@@ -17,43 +17,14 @@ import datetime
 CLASSMAP = {
     "pane-side-back": "//span[@data-icon='back-light']",
     "pane-side-newchat": "//div[@title='New chat']",
+    "pane-side": "//div[@id='pane-side']",
+    "pane-side-item": "//div[@class='_2wP_Y']",
 }
-
-
-def wa_build_convdictlist(wabrowser, logger=astra.baselogger):
-    pane = wabrowser.find_element_by_id("pane-side")
-    wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
-    convnames = []
-    convdicts = []
-    while True:
-        lendicts = len(convdicts)
-        lennames = len(convnames)
-        recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
-        for conv in recentList:
-            try:
-                convdict = {}
-                convdict['display_name'] = conv.text.split("\n")[0]
-                convdict['display_lines'] = conv.text.split("\n")
-                if convdict['display_name'] not in convnames:
-                    convdicts.append(convdict)
-                    convnames.append(convdict['display_name'])
-            except Exception as e:
-                logger.error(
-                    "Could not parse conversation {} {}".format(type(e), str(e)))
-                continue
-        newlendicts = len(convdicts)
-        newlennames = len(convnames)
-        logger.info("Last run {} {}, this run {} {} conversations tracked".format(
-            lendicts, lennames, newlendicts, newlennames))
-        if newlennames == lennames:
-            break
-        wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
-    return convdicts
 
 
 def wa_get_conversations(wabrowser, all=False, maxtries=3, logger=astra.baselogger):
     conversations = []
-    pane = wabrowser.find_element_by_id("pane-side")
+    pane = wabrowser.find_element_by_xpath(CLASSMAP['pane-side'])
     wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
     convnames = []
     m = 0
@@ -81,13 +52,13 @@ def wa_get_conversations(wabrowser, all=False, maxtries=3, logger=astra.baselogg
     return conversations
 
 
-def wa_search_conversations(wabrowser, text, logger=astra.baselogger):
+def wa_search_conversations(wabrowser, text, logger=astra.baselogger, **kwargs):
     convsearchbox = wabrowser.find_element_by_xpath("//input[@title='Search or start new chat']")
     convsearchbox.clear()
     convsearchbox.send_keys(text)
-    karma.wait()
+    karma.wait(logger=logger)
     cdicts = wa_get_conversations(wabrowser)
-    karma.wait()
+    karma.wait(logger=logger)
     convsearchbox.clear()
     return cdicts
 
@@ -124,7 +95,7 @@ def wa_select_conv(wabrowser, text, logger=astra.baselogger):
 def wa_get_conv_messages(wabrowser, text, historical=True, scrolls=2, logger=astra.baselogger):
     lines = []
     wa_select_conv(wabrowser, text)
-    karma.wait()
+    karma.wait(logger=logger)
     pane2 = wabrowser.find_element_by_class_name("_2nmDZ")
     count = 0
     while True:
@@ -132,7 +103,7 @@ def wa_get_conv_messages(wabrowser, text, historical=True, scrolls=2, logger=ast
         wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane2)
         lines = wabrowser.find_elements_by_class_name("vW7d1")
         # TODO: Replace with Whatsapp Classmap in Xetrapal
-        karma.wait(waittime="long")
+        karma.wait(waittime="long", logger=logger)
         newnumlines = len(lines)
         if historical is not True:
             if count == scrolls:
@@ -172,7 +143,7 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
                 msgdict['text_lines'] = [x.replace("'", "") for x in msg.strings]
                 try:
                     msgdict['sender']['displayed_sender'] = linebs.find("span", {"class": "RZ7GO"}).text
-                    msgdict['displayed_sender_name'] = linebs.find("span", {"class": "_3Ye_R"}).text
+                    msgdict['sender']['displayed_sender_name'] = linebs.find("span", {"class": "_3Ye_R"}).text
                 except Exception as e:
                     logger.error("Could not get display name and sender")
                 images = message[0].find_all("img")
@@ -180,16 +151,16 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
                     image = line.find_element_by_tag_name("img")
                     if "blob" in image.get_attribute("src"):
                         image.click()
-                        karma.wait()
+                        karma.wait(logger=logger)
                         files = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
                         wabrowser.find_element_by_xpath("//div[@title='Download']").click()
-                        karma.wait(waittime="long")
+                        karma.wait(waittime="long", logger=logger)
                         newfiles = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
                         logger.info("Downloaded file {}".format(list(set(newfiles)-set(files))[0]))
                         msgdict['file'] = os.path.join(wabrowser.profile.default_preferences['browser.download.dir'], list(set(newfiles)-set(files))[0])
-                        karma.wait()
+                        karma.wait(logger=logger)
                         wabrowser.find_element_by_xpath("//div[@title='Close']").click()
-                        karma.wait()
+                        karma.wait(logger=logger)
             if msgdict != {}:
                 msgdict['platform'] = "whatsapp"
                 logger.info(msgdict)
@@ -209,7 +180,7 @@ def wa_send_text(browser, text, logger=astra.baselogger):
     t.send_keys(text)
     t = browser.find_element_by_class_name("_35EW6")
     t.click()
-    karma.wait()
+    karma.wait(logger=logger)
 
 
 def wa_reply_random(browser, logger=astra.baselogger):

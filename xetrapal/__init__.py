@@ -1,5 +1,5 @@
 
-#coding: utf-8
+# coding: utf-8
 '''
 __________
 < Xetrapal (क्षेत्रपाल) >
@@ -11,22 +11,16 @@ __________
                 ||     ||
 
 हिन्दी में सोशियल मीडिया का अध्ययन
-'''
-
-'''
 यह एक इनिट फ़ाइल है, जो कि पाइथन के हर पैकेज में होनी अनिवार्य है।
 '''
 
+
 __author__ = 'Ananda Bhairav Nath <anandabhairavnath@gmail.com>'
 __version__ = '0.0.1'
-
-
-
-
-#Named tuples help in keeping things in order
-from collections import namedtuple
-#To make copies of objects
-from copy import deepcopy
+# Named tuples help in keeping things in order
+# from collections import namedtuple
+# To make copies of objects
+# from copy import deepcopy
 
 '''
 यहां हम अपने पैकेज के सब पैकेज लोड कर रहे हैं
@@ -34,8 +28,10 @@ from copy import deepcopy
 जैसे की, aadhaar नामक सब पैकेज के बारे में जानने के लिये aadhaar.py नामक फ़ाइल देखें
 '''
 
-from .aadhaar import *
-from .astra import *
-from .jeeva import *
-from .vaahan import *
-from .Xetrapal import *
+# from . import fbkarmas
+# from . import gdastras
+# from . import astra import *
+# from . import jeeva import *
+# from . import vaahan
+from .Xetrapal import Xetrapal
+# from . import wakarmas

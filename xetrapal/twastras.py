@@ -52,7 +52,7 @@ class XpalTwitterSheeter(XpalTwitterStreamer):
         # self.
 
 
-def get_twython_streamer(config, ofilename=None, logger=astra.baselogger):
+def get_twython_streamer(config=None, ofilename=None, logger=astra.baselogger, **kwargs):
 
     if ofilename is None:
         ts = datetime.now()
@@ -76,7 +76,7 @@ def get_twython_streamer(config, ofilename=None, logger=astra.baselogger):
 # Get a Twython to work with twitter
 
 
-def get_twython(config, logger=astra.baselogger):
+def get_twython(config=None, logger=astra.baselogger, **kwargs):
     logger.info("Trying to get a twython to work with twitter")
     app_key = config.get("Twython", 'app_key')
     app_secret = config.get("Twython", 'app_secret')
@@ -91,12 +91,12 @@ def get_twython(config, logger=astra.baselogger):
         return None
 
 
-def get_tweepy(twconfig, logger=astra.baselogger):
+def get_tweepy(config=None, logger=astra.baselogger, **kwargs):
     logger.info("Trying to get a tweepy to work with twitter")
-    app_key = twconfig.get("Twython", 'app_key')
-    app_secret = twconfig.get("Twython", 'app_secret')
-    oauth_token = twconfig.get("Twython", 'oauth_token')
-    oauth_token_secret = twconfig.get("Twython", 'oauth_token_secret')
+    app_key = config.get("Twython", 'app_key')
+    app_secret = config.get("Twython", 'app_secret')
+    oauth_token = config.get("Twython", 'oauth_token')
+    oauth_token_secret = config.get("Twython", 'oauth_token_secret')
     auth = tweepy.OAuthHandler(app_key, app_secret)
     auth.set_access_token(oauth_token, oauth_token_secret)
     try:

@@ -3,7 +3,7 @@
 # from xetrapal import vaahan
 # from xetrapal import karma
 
-from . import whatsappkarmas
+from . import wakarmas
 from . import astra
 from . import karma
 from bs4 import BeautifulSoup
@@ -11,7 +11,7 @@ import os
 import datetime
 
 
-def wa_get_images_for_users(browser, conversations, logger=astra.baselogger):
+def wa_get_images_for_users(browser, conversations, logger=astra.baselogger, **kwargs):
     # people = browser.find_elements_by_class_name("_2wP_Y")
     names = []
     image_list = []
@@ -54,16 +54,16 @@ def wa_get_images_from_contacts(browser):
         chat = icon.get_attribute("data-icon")
         if chat == u'chat':
             contact_chat[i].click()
-            print "yes"
+            print("yes")
             break
         else:
-            print "not this"
+            print("not this")
     return wa_get_images_for_users(browser)
 
 
 def wa_get_conv_messages(wabrowser, text, historical=True, scrolls=2, logger=astra.baselogger):
     lines = []
-    whatsappkarmas.select_conv(wabrowser, text)
+    wakarmas.select_conv(wabrowser, text)
     karma.wait()
     pane2 = wabrowser.find_element_by_class_name("_2nmDZ")
     count = 0

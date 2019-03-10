@@ -3,22 +3,22 @@
 from . import astra
 from . import karma
 from . import jeeva
-from . import fbkarmas
-from . import twkarmas
-from . import wakarmas
-from . import gdkarmas
+# from . import fbkarmas
+# from . import twkarmas
+# from . import wakarmas
+# from . import gdkarmas
 import colored
-from . import twastras
-from . import gdastras
-from . import smsastras
+# from . import twastras
+# from . import gdastras
+# from . import smsastras
 from . import aadesh
-
+from inspect import getmembers, isfunction
 
 # import gdkarmas
 from . import pykkakarta
-import os
+# import os
 # import mojomailastras
-from . import telegramastras
+# from . import telegramastras
 # import telegramkarmas
 # import thespiankarta
 
@@ -31,6 +31,8 @@ class Xetrapal(jeeva.Jeeva):
         self.update_astras()
         self.update_vaahans()
         self.save_profile()
+        self.load_module(astra)
+        self.load_module(karma)
 
     def update_astras(self):
         self.logger.info("Trying to update astras")
@@ -103,7 +105,7 @@ class Xetrapal(jeeva.Jeeva):
         kartaref = pykkakarta.Karta.start(jeeva=self)
         self.kartarefs.append(kartaref)
         return kartaref
-
+    '''
     def get_browser(self):
         browser = astra.get_browser(download_dir=self.sessiondownloadpath, logger=self.logger)
         return browser
@@ -183,19 +185,6 @@ class Xetrapal(jeeva.Jeeva):
         else:
             tweetkarta = self.kartarefs[0]
         tweetkarta.tell(tweetmsg)
-# To Do
-    '''
-    def save_tweet_search_to_gdrive(self, searchstring, tcount=100, sheet_name=None):
-        gd = self.astras['pygsheet']
-        tw = self.astras['twython']
-
-    def get_mojogmail(self):
-        mm = mojomailastras.get_mojogmail(
-            configfile=self.configfile, logger=self.logger)
-        if "mojomail" not in self.astras.keys():
-            self.add_astra("mojomail", mm)
-        return mm
-    '''
 
     def get_tg_bot(self):
         tg_bot = telegramastras.XetrapalTelegramBot(
@@ -203,3 +192,19 @@ class Xetrapal(jeeva.Jeeva):
         if tg_bot.name not in self.astras.keys():
             self.add_astra(tg_bot.name, tg_bot)
         return tg_bot
+    '''
+
+    def load_func(self, func):
+        def call(*args, **kwargs):
+            args = list(args)
+            kwargs['logger'] = self.logger
+            kwargs['path'] = self.sessiondownloadpath
+            kwargs['config'] = self.config
+            # print(args, kwargs)
+            return func(*args, **kwargs)
+        return call
+
+    def load_module(self, module):
+        functions_list = [o for o in getmembers(module) if isfunction(o[1])]
+        for func in functions_list:
+            self.__dict__[func[0]] = self.load_func(func[1])

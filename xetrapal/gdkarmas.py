@@ -12,7 +12,7 @@ from . import json
 # Use
 
 
-def lookup_ssheet(gc, sheetdict, logger=astra.baselogger):
+def lookup_ssheet(gc, sheetdict, logger=astra.baselogger, **kwargs):
     logger.info("Looking up sheetdict")
     for ssheet in gc.list_ssheets():
         if sheetdict['id'] == ssheet['id']:
@@ -24,7 +24,7 @@ def lookup_ssheet(gc, sheetdict, logger=astra.baselogger):
     return sheetdict
 
 
-def get_ssheet(gd, key=None, name=None, logger=astra.baselogger):
+def get_ssheet(gd, key=None, name=None, logger=astra.baselogger, **kwargs):
     if key is None and name is None:
         return None
     if key is not None:
@@ -33,7 +33,7 @@ def get_ssheet(gd, key=None, name=None, logger=astra.baselogger):
         return get_ssheet_by_name(gd, name)
 
 
-def create_new_ssheet(gc, title, folderid=None, logger=astra.baselogger):
+def create_new_ssheet(gc, title, folderid=None, logger=astra.baselogger, **kwargs):
     for ssheet in gc.list_ssheets():
         if ssheet['name'] == title:
             logger.info("Sheet exists...try a different name")
@@ -45,7 +45,7 @@ def create_new_ssheet(gc, title, folderid=None, logger=astra.baselogger):
             return gc.open_by_key(ssheet['id'])
 
 
-def get_ssheet_by_name(gc, title, logger=astra.baselogger):
+def get_ssheet_by_name(gc, title, logger=astra.baselogger, **kwargs):
     for ssheet in gc.list_ssheets():
         if ssheet['name'] == title:
             logger.info("Sheet " + title + " exists...fetching")
@@ -54,7 +54,7 @@ def get_ssheet_by_name(gc, title, logger=astra.baselogger):
     return None
 
 
-def get_ssheet_by_key(gc, key, logger=astra.baselogger):
+def get_ssheet_by_key(gc, key, logger=astra.baselogger, **kwargs):
     try:
         logger.info("Trying to fetch heet " + key)
         return gc.open_by_key(key)
@@ -63,7 +63,7 @@ def get_ssheet_by_key(gc, key, logger=astra.baselogger):
         return None
 
 
-def get_sheet_last_row(ssheet, sheetname):
+def get_sheet_last_row(ssheet, sheetname, **kwargs):
     sheet = ssheet.worksheet_by_title(sheetname)
     rownum = 2
     rowval = sheet.get_row(rownum)
@@ -76,24 +76,24 @@ def get_sheet_last_row(ssheet, sheetname):
         return sheet.get_row(rownum - 1)
 
 
-def get_json_feed(feedurl):
+def get_json_feed(feedurl, **kwargs):
     response = urlopen(feedurl)
     data = json.load(response)
     return data
 
 
-def goto_sheet_by_key(browser, sheetkey):
+def goto_sheet_by_key(browser, sheetkey, **kwargs):
     browser.get("https://docs.google.com/spreadsheets/d/" + sheetkey)
 
 
-def goto_sheet_tab(browser, sheetname):
+def goto_sheet_tab(browser, sheetname, **kwargs):
     for sheettab in browser.find_elements_by_class_name("docs-sheet-tab-name"):
         print(sheettab.get_property("innerHTML"))
         if sheettab.get_property("innerHTML") == sheetname:
             sheettab.click()
 
 
-def build_cube(gc, sheetname=None, key=None, logger=astra.baselogger):
+def build_cube(gc, sheetname=None, key=None, logger=astra.baselogger, **kwargs):
     if sheetname is None and key is None:
         logger.error("No remote identifier specified,local copy only")
         return None
@@ -104,7 +104,7 @@ def build_cube(gc, sheetname=None, key=None, logger=astra.baselogger):
     return cubesheet
 
 
-def generate_graph(gd, sheetname=None, key=None, logger=astra.baselogger, outfile=None):
+def generate_graph(gd, sheetname=None, key=None, logger=astra.baselogger, outfile=None, **kwargs):
 
     networksheet = get_ssheet(gd, key=key, logger=logger)
     nodesheet = networksheet.worksheet_by_title("Nodes")

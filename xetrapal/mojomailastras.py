@@ -11,7 +11,7 @@ import sys
 sys.path.append("/opt/mojomailman/mojomail")
 
 
-def get_mojogmail(configfile, logger=astra.baselogger):
+def get_mojogmail(configfile, logger=astra.baselogger, **kwargs):
     logger.info("Getting a GMail driver")
     m = MojoGMail(configfile=configfile, logger=logger)
     return m
