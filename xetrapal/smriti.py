@@ -61,3 +61,10 @@ class SmritiBase(PPrintMixin):
 
 class XetrapalSmriti(SmritiBase, DynamicDocument):
     configfile = fields.StringField(unique=True, required=True)
+    lastsession = fields.ReferenceField('XetrapalSession')
+
+
+class XetrapalSession(SmritiBase, DynamicDocument):
+    session_name = fields.StringField(unique=True, required=True)
+    source_smriti = fields.ReferenceField(XetrapalSmriti)
+    functions_loaded = fields.ListField(default=[])

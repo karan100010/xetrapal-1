@@ -22,14 +22,23 @@ import random
 # import os
 
 
-def load_xpal_smriti(configfilepath=None, **kwargs):
-    profile = smriti.XetrapalSmriti.objects(configfile=configfilepath)
-    if len(profile):
-        return profile[0]
-    else:
-        profile = smriti.XetrapalSmriti(configfile=configfilepath)
-        profile.save()
-        return profile
+def load_xpal_smriti(configfilepath=None, logger=astra.baselogger, **kwargs):
+    try:
+        config = load_config(configfilepath)
+        logger.info("Loaded config from {}".format(configfilepath))
+        profile = smriti.XetrapalSmriti.objects(configfile=configfilepath)
+        if len(profile):
+            profile = profile[0]
+            profile.update(**config._sections['Jeeva'])
+            profile.save()
+            profile.reload()
+            return profile
+        else:
+            profile = smriti.XetrapalSmriti(configfile=configfilepath, **config._sections['Jeeva'])
+            profile.save()
+            return profile
+    except Exception as e:
+        logger.error("{} {}".format(type(e), str(e)))
 
 
 def random_of_ranges(*ranges, **kwargs):

@@ -135,14 +135,16 @@ def wa_search_conversations(text=None, all=False, scrolls=10, wabrowser=None, lo
 
 def wa_get_conv_messages(wabrowser=None, conversation=None, historical=False, logger=astra.baselogger, scrolls=10, **kwargs):
     logger.info("Searching for messages in conversation {}".format(conversation.display_name))
-    p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
+    # p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
     messages = []
     # seen_messages = []
     # return messages
+    '''
     for message in p:
         m = wa_get_message(message, wabrowser, logger=logger)
         if type(m) == dict and m != {}:
             messages.append(m)
+    '''
     return messages
 
 
@@ -175,30 +177,6 @@ def wa_select_conv(conversation=None, text=None, wabrowser=None, logger=astra.ba
             logger.error("No matching conversation found for {}".format(text))
             return False
         wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
-
-
-def wa_get_conv_message_lines(wabrowser=None, text=None, historical=True, scrolls=2, logger=astra.baselogger, **kwargs):
-    lines = []
-    wa_select_conv(wabrowser, text)
-    karma.wait(logger=logger)
-    # pane2 = wabrowser.find_element_by_class_name("_2nmDZ")
-    pane2 = wa_get_element("convpane", wabrowser=wabrowser, logger=logger)
-    count = 0
-    while True:
-        numlines = len(lines)
-        wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane2)
-        # lines = wabrowser.find_elements_by_class_name("vW7d1")
-        lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
-        # TODO: Replace with Whatsapp Classmap in Xetrapal
-        karma.wait(waittime="long", logger=logger)
-        newnumlines = len(lines)
-        if historical is not True:
-            if count == scrolls:
-                break
-        if newnumlines == numlines:
-            break
-        count += 1
-    return lines
 
 
 def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs):
@@ -257,6 +235,41 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
     except Exception as e:
         logger.error("{} {}".format(type(e), str(e)))
         return "{} {}".format(type(e), str(e))
+
+
+def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger=astra.baselogger, **kwargs):
+    convpane = wa_get_element("convpane", wabrowser=wabrowser, logger=logger)
+    scrolled = 0
+    lines = []
+    while True:
+        numlines = len(lines)
+        wabrowser.execute_script("arguments[0].scrollTo(0,0)", convpane)
+        # lines = wabrowser.find_elements_by_class_name("vW7d1")
+        lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
+        karma.wait(waittime="long", logger=logger)
+        newnumlines = len(lines)
+        if historical is not True:
+            if scrolled == scrolls:
+                break
+        if newnumlines == numlines:
+            break
+        scrolled += 1
+    msgs = []
+    for line in lines:
+        msgdict = wa_get_message(line=line, wabrowser=wabrowser, logger=logger)
+        logger.info("{}".format(msgdict))
+        if type(msgdict) == dict:
+            msg = wasmriti.WhatsappMessage.objects(**msgdict)
+            if len(msg):
+                logger.error("Duplicate")
+            else:
+                msg = wasmriti.WhatsappMessage(**msgdict)
+                msg.save()
+                msgs.append(msg)
+    return msgs
+    # return lines
+
+
 
 
 def wa_send_text(wabrowser, text, logger=astra.baselogger):

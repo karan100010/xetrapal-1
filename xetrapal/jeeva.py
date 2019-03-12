@@ -4,6 +4,7 @@ from .aadhaar import XPAL_LOG_FORMAT
 from . import karma
 # from .karma import *
 from . import astra
+from . import smriti
 # from .astra import *
 from datetime import datetime
 import colored
@@ -16,34 +17,34 @@ import logging
 
 class Jeeva(object):
 	def __init__(self, xpalsmriti):
-		self.config = karma.load_config(xpalsmriti.configfile)
+		# self.config = karma.load_config(xpalsmriti.configfile)
 		self.smriti = xpalsmriti
-		self.jsonprofile = {}
-		try:
-			self.name = self.config.get("Jeeva", "name")
-		except Exception as e:
-			astra.baselogger.error("Name error {}".format(str(e)))
-			self.name = "Jeeva-"+str(uuid4())
-		self.set_property("name", self.name)
+		# self.jsonprofile = {}
+		self.name = self.smriti.name
 		self.logger = astra.get_xpal_logger(self.name)
 		self.logger.info("My name is " + colored.stylize(self.name, colored.fg("red")))
 		self.setup_disk()
-		self.start_session()
+		self.session = self.start_session()
+		self.smriti.lastsession = self.session
+		self.smriti.save()
+		self.smriti.reload()
 		# self.karta=Karta(self)
 		# self.karta.start()
-		self.save_profile()
+		# self.save_profile()
 		self.kartarefs = []
-		self.configfile = xpalsmriti.configfile
+		self.configfile = self.smriti.configfile
 
 	def setup_disk(self):
-		self.datapath = self.config.get("Jeeva", "datapath")
-		self.set_property("datapath", self.datapath)
+		# self.datapath = self.config.get("Jeeva", "datapath")
+		self.datapath = self.smriti.datapath
+		# self.set_property("datapath", self.datapath)
 		if not os.path.exists(self.datapath):
 			self.logger.info("Creating a new datapath for myself at %s" % colored.stylize(self.datapath, colored.fg("yellow")))
 			os.mkdir(self.datapath)
 		else:
 			self.logger.info("I already have a datapath at the location %s" % colored.stylize(self.datapath, colored.fg("yellow")))
 
+	'''
 	def set_property(self, propertyname, value):
 		self.jsonprofile[propertyname] = value
 
@@ -62,6 +63,7 @@ class Jeeva(object):
 		self.smriti.update(**self.jsonprofile)
 		self.smriti.save()
 		self.smriti.reload()
+	'''
 
 	def log_to_disk(self):
 		logFormatter = logging.Formatter(XPAL_LOG_FORMAT)
@@ -76,7 +78,8 @@ class Jeeva(object):
 		os.symlink(self.sessionlogfile, os.path.join(self.datapath, "xpal.log"))
 
 	def start_session(self):
-		sessionpathprefix = self.config.get("Jeeva", "sessionpathprefix")
+		# sessionpathprefix = self.config.get("Jeeva", "sessionpathprefix")
+		sessionpathprefix = self.smriti.sessionpathprefix
 		ts = datetime.now()
 		sessiondir = sessionpathprefix+"-"+ts.strftime("%Y%b%d-%H%M%S")
 		self.sessionpath = os.path.join(self.datapath, sessiondir)
@@ -97,4 +100,8 @@ class Jeeva(object):
 			os.mkdir(self.sessionjsonpath)
 		self.log_to_disk()
 		sessiondata['sessionlog'] = self.sessionlogfile
-		self.set_property("lastsession", sessiondata)
+		sessiondata['session_name'] = sessiondir
+		session = smriti.XetrapalSession(**sessiondata)
+		session.save()
+		session.reload()
+		return session
