@@ -270,8 +270,6 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
     # return lines
 
 
-
-
 def wa_send_text(wabrowser, text, logger=astra.baselogger):
     logger.info("Sending message {}".format(text))
     textfield = wabrowser.find_elements_by_class_name("_2S1VP")
