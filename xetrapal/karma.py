@@ -15,29 +15,40 @@ import json
 # To get some colored outputs
 # from pygments import highlight, lexers, formatters
 from uuid import uuid4
-from .aadhaar import XPAL_WAIT_TIME, XPAL_UTC_OFFSET_TIMEDELTA
+from .aadhaar import XPAL_WAIT_TIME
 from . import astra
+from . import smriti
 import random
 # import os
 
 
-def random_of_ranges(*ranges):
+def load_xpal_smriti(configfilepath=None, **kwargs):
+    profile = smriti.XetrapalSmriti.objects(configfile=configfilepath)
+    if len(profile):
+        return profile[0]
+    else:
+        profile = smriti.XetrapalSmriti(configfile=configfilepath)
+        profile.save()
+        return profile
+
+
+def random_of_ranges(*ranges, **kwargs):
     return random.choice(random.choice(ranges))
 
 
-def get_color_json(dictionary, logger=astra.baselogger, **kwargs):
+def get_color_json(dictionary=None, logger=astra.baselogger, **kwargs):
     logger.info("Getting color json")
     formatted_json = get_formatted_json(dictionary)
     # colorful_json = highlight(unicode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
     return formatted_json
 
 
-def get_formatted_json(dictionary, logger=astra.baselogger):
+def get_formatted_json(dictionary=None, logger=astra.baselogger, **kwargs):
     formatted_json = json.dumps(dictionary, sort_keys=True, indent=4)
     return formatted_json
 
 
-def load_config(configfile, logger=astra.baselogger, **kwargs):
+def load_config(configfile=None, logger=astra.baselogger, **kwargs):
     config = configparser.ConfigParser()
     config.read(configfile)
     return config
@@ -67,7 +78,7 @@ def get_jeeva_config(name=None, path=None, sessionpathprefix=None, logger=astra.
     return c
 
 
-def load_data_from_json(jsonpath, logger=astra.baselogger, **kwargs):
+def load_data_from_json(jsonpath=None, logger=astra.baselogger, **kwargs):
     data = {}
     if os.path.exists(jsonpath):
         try:
@@ -79,7 +90,7 @@ def load_data_from_json(jsonpath, logger=astra.baselogger, **kwargs):
     return data
 
 
-def save_data_to_jsonfile(data, filename=None, path=None, prefix=None, suffix=None, logger=astra.baselogger, **kwargs):
+def save_data_to_jsonfile(data=None, filename=None, path=None, prefix=None, suffix=None, logger=astra.baselogger, **kwargs):
     if path is None:
         path = ""
     if filename is None:
@@ -94,7 +105,7 @@ def save_data_to_jsonfile(data, filename=None, path=None, prefix=None, suffix=No
     return fname
 
 
-def download_file(url, path=None, filename=None, prefix=None, suffix=None, logger=astra.baselogger, **kwargs):
+def download_file(url=None, path=None, filename=None, prefix=None, suffix=None, logger=astra.baselogger, **kwargs):
     if path is None:
         path = "."
     if filename is None:
@@ -116,7 +127,7 @@ def download_file(url, path=None, filename=None, prefix=None, suffix=None, logge
         logger.error("Error {}".format(str(e)))
 
 
-def export_table(rowdf, filename="table.csv", path=".", dataframe=False, logger=astra.baselogger, **kwargs):
+def export_table(rowdf=None, filename="table.csv", path=".", dataframe=False, logger=astra.baselogger, **kwargs):
     filepath = os.path.join(path, filename)
     try:
         rowdf.to_csv(filepath, encoding="utf-8")
@@ -126,15 +137,15 @@ def export_table(rowdf, filename="table.csv", path=".", dataframe=False, logger=
         return "{} {}".format(type(e), str(e))
 
 
-def scroll_page(browser, logger=astra.baselogger, **kwargs):
+def scroll_page(browser=None, logger=astra.baselogger, **kwargs):
     browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
 
-def scroll_up(browser, logger=astra.baselogger, **kwargs):
+def scroll_up(browser=None, logger=astra.baselogger, **kwargs):
     browser.execute_script("window.scrollTo(0,window.scrollY-450);")
 
 
-def scroll_to_bottom(browser, logger=astra.baselogger, **kwargs):
+def scroll_to_bottom(browser=None, logger=astra.baselogger, **kwargs):
     ticks_at_bottom = 0
     while True:
         js_scroll_code = "if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {return true;} else {return false;}"
@@ -150,7 +161,7 @@ def scroll_to_bottom(browser, logger=astra.baselogger, **kwargs):
     logger.info("At bottom of page")
 
 
-def close_modal(browser, logger=astra.baselogger, **kwargs):
+def close_modal(browser=None, logger=astra.baselogger, **kwargs):
     browser.find_element_by_link_text("Close").click()
 
 
@@ -172,13 +183,3 @@ def save_config(config=None, filename=None, logger=astra.baselogger, **kwargs):
 def get_aadesh(msg, func, args=[], kwargs={}, **kargs):
     aadesh = {'msg': msg, 'func': func, 'args': args, 'kwargs': kwargs}
     return aadesh
-
-
-def get_utc_ts(ts, **kwargs):
-    adjts = ts + XPAL_UTC_OFFSET_TIMEDELTA
-    return adjts
-
-
-def get_local_ts(ts, **kwargs):
-    adjts = ts - XPAL_UTC_OFFSET_TIMEDELTA
-    return adjts

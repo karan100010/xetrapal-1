@@ -15,11 +15,9 @@ import logging
 
 
 class Jeeva(object):
-	def __init__(self, config=None, configfile=None):
-		if configfile is not None:
-			self.config = karma.load_config(configfile)
-		else:
-			self.config = config
+	def __init__(self, xpalsmriti):
+		self.config = karma.load_config(xpalsmriti.configfile)
+		self.smriti = xpalsmriti
 		self.jsonprofile = {}
 		try:
 			self.name = self.config.get("Jeeva", "name")
@@ -30,31 +28,21 @@ class Jeeva(object):
 		self.logger = astra.get_xpal_logger(self.name)
 		self.logger.info("My name is " + colored.stylize(self.name, colored.fg("red")))
 		self.setup_disk()
-		self.setup_memory()
 		self.start_session()
 		# self.karta=Karta(self)
 		# self.karta.start()
 		self.save_profile()
 		self.kartarefs = []
-		self.configfile = configfile
+		self.configfile = xpalsmriti.configfile
 
 	def setup_disk(self):
 		self.datapath = self.config.get("Jeeva", "datapath")
 		self.set_property("datapath", self.datapath)
-		self.jeevajsonfile = os.path.join(self.datapath, "jeeva.json")
-		self.set_property("jeevajsonfile", self.jeevajsonfile)
 		if not os.path.exists(self.datapath):
 			self.logger.info("Creating a new datapath for myself at %s" % colored.stylize(self.datapath, colored.fg("yellow")))
 			os.mkdir(self.datapath)
 		else:
 			self.logger.info("I already have a datapath at the location %s" % colored.stylize(self.datapath, colored.fg("yellow")))
-
-	def setup_memory(self):
-		if os.path.exists(self.jeevajsonfile):
-			fileprofile = karma.load_data_from_json(self.jeevajsonfile)
-			if fileprofile != {}:
-				self.jsonprofile = fileprofile
-		self.set_property("name", self.name)
 
 	def set_property(self, propertyname, value):
 		self.jsonprofile[propertyname] = value
@@ -69,8 +57,11 @@ class Jeeva(object):
 		self.logger.info("\n"+karma.get_color_json(self.jsonprofile))
 
 	def save_profile(self):
-		self.logger.info("Saving own JSON profile to file %s" % colored.stylize(self.jeevajsonfile, colored.fg("yellow")))
-		karma.save_data_to_jsonfile(self.jsonprofile, filename=self.jeevajsonfile)
+		self.logger.info("Saving own JSON profile")
+		# karma.save_data_to_jsonfile(self.jsonprofile, filename=self.jeevajsonfile)
+		self.smriti.update(**self.jsonprofile)
+		self.smriti.save()
+		self.smriti.reload()
 
 	def log_to_disk(self):
 		logFormatter = logging.Formatter(XPAL_LOG_FORMAT)

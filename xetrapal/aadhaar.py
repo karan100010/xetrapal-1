@@ -5,6 +5,7 @@
 import datetime
 import re
 
+
 XPAL_FIELD_STYLES = {'hostname': {'color': 'magenta'}, 'programname': {'color': 'cyan'}, 'name': {
     'color': 'cyan', 'bold': True}, 'levelname': {'color': 'green', 'bold': True}, 'asctime': {'color': 'green'}}
 
@@ -22,3 +23,13 @@ XPAL_UTC_OFFSET_TIMEDELTA = datetime.datetime.utcnow() - datetime.datetime.now()
 nospec = re.compile(r"[^A-Za-z0-9\n @.'\-+()]+")
 notnum = re.compile(r"[^0-9+()\-]+")
 engalpha = re.compile(r"[a-zA-Z]")
+
+
+def get_utc_ts(ts, **kwargs):
+    adjts = ts + XPAL_UTC_OFFSET_TIMEDELTA
+    return adjts
+
+
+def get_local_ts(ts, **kwargs):
+    adjts = ts - XPAL_UTC_OFFSET_TIMEDELTA
+    return adjts

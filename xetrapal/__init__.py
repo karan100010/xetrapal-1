@@ -28,10 +28,14 @@ __version__ = '0.0.1'
 जैसे की, aadhaar नामक सब पैकेज के बारे में जानने के लिये aadhaar.py नामक फ़ाइल देखें
 '''
 
-# from . import fbkarmas
-# from . import gdastras
-# from . import astra import *
+from . import aadhaar
+from . import karma
+from . import astra 
 # from . import jeeva import *
 # from . import vaahan
+import mongoengine
+mongoengine.connect('xetrapal-smriti', alias='default')
+from . import smriti
+
 from .Xetrapal import Xetrapal
 # from . import wakarmas

@@ -28,6 +28,7 @@ class Xetrapal(jeeva.Jeeva):
         super(Xetrapal, self).__init__(*args, **kwargs)
         self.vaahans = {}
         self.astras = {}
+        self.functions = []
         self.update_astras()
         self.update_vaahans()
         self.save_profile()
@@ -200,11 +201,21 @@ class Xetrapal(jeeva.Jeeva):
             kwargs['logger'] = self.logger
             kwargs['path'] = self.sessiondownloadpath
             kwargs['config'] = self.config
+            for key in self.astras.keys():
+                kwargs[key] = self.astras[key]
             # print(args, kwargs)
             return func(*args, **kwargs)
         return call
 
     def load_module(self, module):
-        functions_list = [o for o in getmembers(module) if isfunction(o[1])]
-        for func in functions_list:
-            self.__dict__[func[0]] = self.load_func(func[1])
+        self.logger.info("Trying to load module {}".format(module.__name__))
+        try:
+            functions_list = [o for o in getmembers(module) if isfunction(o[1])]
+            for func in functions_list:
+                self.__dict__[func[0]] = self.load_func(func[1])
+            self.functions += [f[0] for f in functions_list]
+            self.functions = list(set(self.functions))
+            self.functions.sort()
+            self.logger.info("Added functions {}".format([f[0] for f in functions_list]))
+        except Exception as e:
+            self.logger.error("Error loading module {}, {} {}".format(module.__name__, type(e), str(e)))

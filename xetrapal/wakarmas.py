@@ -10,29 +10,103 @@ from . import aadhaar
 from bs4 import BeautifulSoup
 import os
 import datetime
+from . import wasmriti
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
 # Get value Astras, to be run with {'msg':'get','func':function_object,'args':(),'kwargs':{}}
 # Use
-CLASSMAP = {
-    "pane-side-back": "//span[@data-icon='back-light']",
-    "pane-side-newchat": "//div[@title='New chat']",
-    "pane-side": "//div[@id='pane-side']",
-    "pane-side-item": "//div[@class='_2wP_Y']",
+WAWCLASSMAP = {
+    "sidepane": "//div[@id='pane-side']",
+    "sidepane-item": "//div[@class='_2wP_Y']",
+    "sidepane-back": "//span[@data-icon='back-light']",
+    "sidepane-newchat": "//div[@title='New chat']",
+    "sidepane-profile": "//div[contains(@class,'_2vPAk')]",
+    "menu-launcher": "//div[@role='button' and @title='Menu']",
+    "menu-button-newchat": "//div[@role='button' and @title='New chat']",
+    "menu-button-profile": "//div[@role='button' and @title='Profile']",
+    "sidepane-searchbox": "//input[@title='Search or start new chat']",
+    "convpane": "//div[@class='_2nmDZ']",
+    "convpane-item": "//div[@class='vW7d1']",
+
 }
 
 
-def wa_get_conversations(wabrowser, all=False, maxtries=3, logger=astra.baselogger):
+def wa_get_element(element=None, multi=False, wabrowser=None, logger=astra.baselogger, **kwargs):
+    try:
+        if multi is False:
+            return wabrowser.find_element_by_xpath(WAWCLASSMAP[element])
+        else:
+            return wabrowser.find_elements_by_xpath(WAWCLASSMAP[element])
+    except Exception as e:
+        logger.error("{} {}".format(type(e), str(e)))
+        return None
+
+
+def wa_click_element(element=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    try:
+        elem = wa_get_element(element=element, wabrowser=wabrowser, logger=logger, **kwargs)
+        if elem is not None:
+            elem.click()
+            logger.info("Clicked element {}".format(element))
+            return True
+        else:
+            logger.error("Could not click element {}".format(element))
+    except Exception as e:
+        logger.error("{} {}".format(type(e), str(e)))
+        return None
+
+
+def wa_send_keys_to_element(element=None, keys=None, clearfirst=False, wabrowser=None, logger=astra.baselogger, **kwargs):
+    try:
+        elem = wa_get_element(element=element, wabrowser=wabrowser, logger=logger, **kwargs)
+        if elem is not None:
+            if clearfirst:
+                elem.clear()
+            elem.send_keys(keys)
+            logger.info("Send keys '{}' to element {}".format(keys, element))
+            return True
+        else:
+            logger.error("Could not send keys '{}' to element {}".format(keys, element))
+    except Exception as e:
+        logger.error("{} {}".format(type(e), str(e)))
+        return None
+
+
+def wa_test_login(wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Testing for Whatsapp Web Login by checking if the side pane is loaded...")
+    try:
+        sidepane = wa_get_element("sidepane", wabrowser=wabrowser, logeer=logger)
+        if sidepane is not None:
+            wabrowser.execute_script("arguments[0].scrollTo(0,0)", sidepane)
+            logger.info("Whatsapp Web is logged in")
+            return True
+    except Exception as e:
+        logger.error("Error:{} {}. Whatsapp Web doesn't seem to be logged in. Maybe try again later?".format(type(e), str(e)))
+        return False
+
+
+def wa_login(wabrowser=None, logger=astra.baselogger, tries=3, **kwargs):
+    logger.info("Attempting to access Whatsapp Web")
+    wabrowser.get("https://web.whatsapp.com")
+    logger.info("\n ***************************************\n Please scan the QR code in the browser with your phone's Whatsapp App\n ***************************************\n")
+    for i in range(tries):
+        karma.wait(logger=logger, waittime="long")
+        if wa_test_login(wabrowser=wabrowser, logger=logger):
+            break
+
+
+def wa_get_conversations(all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
     conversations = []
-    pane = wabrowser.find_element_by_xpath(CLASSMAP['pane-side'])
-    wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
+    sidepane = wa_get_element("sidepane", wabrowser=wabrowser, logger=logger)
+    wabrowser.execute_script("arguments[0].scrollTo(0,0)", sidepane)
     convnames = []
     m = 0
     newm = 1
-    tries = 0
+    scrolled = 0
     while True:
         m = len(convnames)
-        recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
+        # recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
+        recentList = wa_get_element("sidepane-item", multi=True, wabrowser=wabrowser, logger=logger)
         for conv in recentList:
             try:
                 convdict = {}
@@ -45,39 +119,51 @@ def wa_get_conversations(wabrowser, all=False, maxtries=3, logger=astra.baselogg
                     "Could not parse conversation {} {}".format(type(e), str(e)))
                 continue
         newm = len(conversations)
-        if newm == m or all is False or tries == maxtries:
+        if newm == m or all is False or scrolled == scrolls:
             break
-        tries += 1
-        wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
+        scrolled += 1
+        wabrowser.execute_script("arguments[0].scrollBy(0,500)", sidepane)
+        karma.wait(logger=logger, waittime="medium")
     return conversations
 
 
-def wa_search_conversations(wabrowser, text, logger=astra.baselogger, **kwargs):
-    convsearchbox = wabrowser.find_element_by_xpath("//input[@title='Search or start new chat']")
-    convsearchbox.clear()
-    convsearchbox.send_keys(text)
-    karma.wait(logger=logger)
-    cdicts = wa_get_conversations(wabrowser)
-    karma.wait(logger=logger)
-    convsearchbox.clear()
-    return cdicts
+def wa_search_conversations(text=None, all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
+    wa_send_keys_to_element("sidepane-searchbox", text, clearfirst=True, wabrowser=wabrowser, logger=logger)
+    karma.wait(logger=logger, waittime="medium")
+    return wa_get_conversations(all=all, scrolls=scrolls, wabrowser=wabrowser, logger=logger)
 
 
-def wa_select_conv(wabrowser, text, logger=astra.baselogger):
-    pane = wabrowser.find_element_by_id("pane-side")
+def wa_get_conv_messages(wabrowser=None, conversation=None, historical=False, logger=astra.baselogger, scrolls=10, **kwargs):
+    logger.info("Searching for messages in conversation {}".format(conversation.display_name))
+    p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
+    messages = []
+    # seen_messages = []
+    # return messages
+    for message in p:
+        m = wa_get_message(message, wabrowser, logger=logger)
+        if type(m) == dict and m != {}:
+            messages.append(m)
+    return messages
+
+
+def wa_select_conv(conversation=None, text=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    pane = wa_get_element("sidepane", wabrowser=wabrowser, logger=logger)
     wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
     convnames = []
     while True:
         m = len(convnames)
-        recentList = wabrowser.find_elements_by_class_name("_2wP_Y")
+        recentList = wa_get_element("sidepane-item", multi=True, wabrowser=wabrowser, logger=logger)
         for conv in recentList:
             try:
                 convdict = {}
                 convdict['display_name'] = conv.text.split("\n")[0]
                 convdict['display_lines'] = conv.text.split("\n")
-                if text in conv.text:
+                if text is not None and text in conv.text:
                     conv.click()
-                    return convdict['display_name']
+                    return True
+                elif conversation is not None and conversation.display_name == convdict['display_name']:
+                    conv.click()
+                    return True
                 else:
                     convnames.append(convdict['display_name'])
             except Exception as e:
@@ -87,21 +173,22 @@ def wa_select_conv(wabrowser, text, logger=astra.baselogger):
         newm = len(convnames)
         if newm == m:
             logger.error("No matching conversation found for {}".format(text))
-            return "error: No matching conversation found for {}".format(text)
-            break
+            return False
         wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
 
 
-def wa_get_conv_messages(wabrowser, text, historical=True, scrolls=2, logger=astra.baselogger):
+def wa_get_conv_message_lines(wabrowser=None, text=None, historical=True, scrolls=2, logger=astra.baselogger, **kwargs):
     lines = []
     wa_select_conv(wabrowser, text)
     karma.wait(logger=logger)
-    pane2 = wabrowser.find_element_by_class_name("_2nmDZ")
+    # pane2 = wabrowser.find_element_by_class_name("_2nmDZ")
+    pane2 = wa_get_element("convpane", wabrowser=wabrowser, logger=logger)
     count = 0
     while True:
         numlines = len(lines)
         wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane2)
-        lines = wabrowser.find_elements_by_class_name("vW7d1")
+        # lines = wabrowser.find_elements_by_class_name("vW7d1")
+        lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
         # TODO: Replace with Whatsapp Classmap in Xetrapal
         karma.wait(waittime="long", logger=logger)
         newnumlines = len(lines)
@@ -114,7 +201,7 @@ def wa_get_conv_messages(wabrowser, text, historical=True, scrolls=2, logger=ast
     return lines
 
 
-def wa_get_message(wabrowser, line, logger=astra.baselogger):
+def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs):
     msgdict = {}
     try:
         wabrowser.execute_script("arguments[0].scrollIntoView(true)", line)
@@ -130,9 +217,9 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
                 msgts = msg.get("data-pre-plain-text").split("] ")[0].replace("[", "").replace("]", "")
                 msgsender = msg.get("data-pre-plain-text").split("] ")[1]
                 if "m" in msgts.lower():
-                    msgdict["created_timestamp"] = karma.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M %p, %m/%d/%Y"))
+                    msgdict["created_timestamp"] = aadhaar.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M %p, %m/%d/%Y"))
                 else:
-                    msgdict["created_timestamp"] = karma.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M, %m/%d/%Y"))
+                    msgdict["created_timestamp"] = aadhaar.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M, %m/%d/%Y"))
                 msgdict['sender'] = {"platform": "whatsapp"}
                 if not aadhaar.engalpha.search(msgsender):
                     msgdict['sender']['mobile_num'] = msgsender.replace(": ", "").replace(" ", "")
@@ -172,22 +259,22 @@ def wa_get_message(wabrowser, line, logger=astra.baselogger):
         return "{} {}".format(type(e), str(e))
 
 
-def wa_send_text(browser, text, logger=astra.baselogger):
+def wa_send_text(wabrowser, text, logger=astra.baselogger):
     logger.info("Sending message {}".format(text))
-    textfield = browser.find_elements_by_class_name("_2S1VP")
+    textfield = wabrowser.find_elements_by_class_name("_2S1VP")
     t = textfield[-1]
     t.click()
     t.send_keys(text)
-    t = browser.find_element_by_class_name("_35EW6")
+    t = wabrowser.find_element_by_class_name("_35EW6")
     t.click()
     karma.wait(logger=logger)
 
 
-def wa_reply_random(browser, logger=astra.baselogger):
+def wa_reply_random(wabrowser, logger=astra.baselogger):
     text = os.popen("fortune").read().strip()
     logger.info(
         "Sending random reply to current conversation in browser {}".format(text))
-    wa_send_text(browser, text)
+    wa_send_text(wabrowser, text)
 
 
 def wa_send_message_to_conv(wabrowser, convtext, text, logger=astra.baselogger):
@@ -198,7 +285,7 @@ def wa_send_message_to_conv(wabrowser, convtext, text, logger=astra.baselogger):
         wa_send_text(wabrowser, text)
 
 
-def wa_get_images_for_users(browser, conversations, logger=astra.baselogger):
+def wa_get_images_for_users(wabrowser, conversations, logger=astra.baselogger):
     # people = browser.find_elements_by_class_name("_2wP_Y")
     names = []
     image_list = []
@@ -234,8 +321,8 @@ def wa_get_images_for_users(browser, conversations, logger=astra.baselogger):
 # a=get_images_for_users(browser)\
 
 
-def wa_get_images_from_contacts(browser):
-    contact_chat = browser.find_elements_by_class_name("rAUz7")
+def wa_get_images_from_contacts(wabrowser=None):
+    contact_chat = wabrowser.find_elements_by_class_name("rAUz7")
     for i in range(len(contact_chat)):
         icon = contact_chat[i].find_element_by_tag_name("span")
         chat = icon.get_attribute("data-icon")
@@ -245,4 +332,4 @@ def wa_get_images_from_contacts(browser):
             break
         else:
             print("not this")
-    return wa_get_images_for_users(browser)
+    return wa_get_images_for_users(wabrowser)

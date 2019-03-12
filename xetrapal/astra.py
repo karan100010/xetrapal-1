@@ -2,10 +2,10 @@
 # from .karma import *
 # for colored logs
 from .aadhaar import XPAL_CONSOLE_FORMAT, XPAL_LEVEL_STYLES, XPAL_FIELD_STYLES
-from uuid import uuid4
-import configparser
-import json
-from pygments import highlight, lexers, formatters
+# from uuid import uuid4
+# import configparser
+# import json
+# from pygments import highlight, lexers, formatters
 from selenium import webdriver
 import os
 import coloredlogs
