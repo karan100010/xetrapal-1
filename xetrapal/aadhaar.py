@@ -5,6 +5,23 @@
 import datetime
 import re
 
+bannertext = '''_______________________
+< Xetrapal (क्षेत्रपाल) >
+ ----------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\\
+                ||----w |
+                ||     ||
+
+हिन्दी में सोशियल मीडिया का अध्ययन
+'''
+
+helptext = '''
+If you can't read the text above, you will probably have trouble with the concepts used in this program.
+This is by design
+That said, doctrings generally work. If you know how to read those, have fun.
+'''
 
 XPAL_FIELD_STYLES = {'hostname': {'color': 'magenta'}, 'programname': {'color': 'cyan'}, 'name': {
     'color': 'cyan', 'bold': True}, 'levelname': {'color': 'green', 'bold': True}, 'asctime': {'color': 'green'}}

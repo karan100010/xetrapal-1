@@ -1,8 +1,23 @@
 # coding: utf-8
+'''__________
+< Xetrapal (क्षेत्रपाल) >
+ ----------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+हिन्दी में सोशियल मीडिया का अध्ययन
+यह एक इनिट फ़ाइल है, जो कि पाइथन के हर पैकेज में होनी अनिवार्य है।
+'''
+
 
 from . import astra
 from . import karma
 from . import jeeva
+from . import aadhaar
+
 # from . import fbkarmas
 # from . import twkarmas
 # from . import wakarmas
@@ -34,6 +49,14 @@ class Xetrapal(jeeva.Jeeva):
         # self.save_profile()
         self.load_module(astra)
         self.load_module(karma)
+
+    def help(self, *args, **kwargs):
+        if len(args) == 0:
+            print(colored.stylize(aadhaar.bannertext, colored.fg("violet")))
+            print(colored.stylize(aadhaar.helptext, colored.fg("red")))
+            print("This instance details:\n {}".format(colored.stylize(repr(self.smriti), colored.fg("yellow"))))
+            print("Available functions: ")
+            print("\n".join(["{}\n{}".format(colored.stylize(x, colored.fg("red")), colored.stylize(self.__dict__[x].__doc__, colored.fg("blue"))) for x in self.functions]))
 
     def update_astras(self):
         self.logger.info("Trying to update astras")
@@ -125,6 +148,7 @@ class Xetrapal(jeeva.Jeeva):
                 kwargs[key] = self.astras[key]
             # print(args, kwargs)
             return func(*args, **kwargs)
+        call.__doc__ = func.__doc__
         return call
 
     def load_module(self, module):

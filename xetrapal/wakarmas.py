@@ -32,6 +32,16 @@ WAWCLASSMAP = {
 
 
 def wa_get_element(element=None, multi=False, wabrowser=None, logger=astra.baselogger, **kwargs):
+    '''
+    Gets a specified element from a whatsapp web signed in browser
+    Arguments:
+        element - the name of the element to be looked up in WAWCLASSMAP
+        multi - specifies whether to get multiple elements corresponding to the xpath specified (True if multiple)
+        wabrowser - handle to a whatsapp signed in browser session, use wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        A selenium web element if successful, None if fails
+    '''
     try:
         if multi is False:
             return wabrowser.find_element_by_xpath(WAWCLASSMAP[element])
@@ -43,6 +53,16 @@ def wa_get_element(element=None, multi=False, wabrowser=None, logger=astra.basel
 
 
 def wa_click_element(element=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    '''
+    Clicks a specified element from a whatsapp web signed in browser
+    Arguments:
+        element - the name of the element to be looked up in WAWCLASSMAP
+        wabrowser - handle to a whatsapp signed in browser session, use wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        True if successful, False if fails
+    '''
+
     try:
         elem = wa_get_element(element=element, wabrowser=wabrowser, logger=logger, **kwargs)
         if elem is not None:
@@ -50,29 +70,49 @@ def wa_click_element(element=None, wabrowser=None, logger=astra.baselogger, **kw
             logger.info("Clicked element {}".format(element))
             return True
         else:
-            logger.error("Could not click element {}".format(element))
+            logger.error("Could not find element {}".format(element))
+            return False
     except Exception as e:
-        logger.error("{} {}".format(type(e), str(e)))
-        return None
+        logger.error("{} {}  in trying to click the element {}".format(type(e), str(e), element))
+        return False
 
 
 def wa_send_keys_to_element(element=None, keys=None, clearfirst=False, wabrowser=None, logger=astra.baselogger, **kwargs):
+    '''
+    Sends specified keys to a specified element from a whatsapp web signed in browser
+    Arguments:
+        element - the name of the element to be looked up in WAWCLASSMAP
+        keys - keys to send, can be a string or a valid selenium.webdriver.common.keys Keys member
+        wabrowser - handle to a whatsapp signed in browser session, use wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        True if successful, False if fails
+    '''
     try:
         elem = wa_get_element(element=element, wabrowser=wabrowser, logger=logger, **kwargs)
         if elem is not None:
             if clearfirst:
                 elem.clear()
             elem.send_keys(keys)
-            logger.info("Send keys '{}' to element {}".format(keys, element))
+            logger.info("Sent keys '{}' to element {}".format(keys, element))
             return True
         else:
-            logger.error("Could not send keys '{}' to element {}".format(keys, element))
+            logger.error("Could not locate element {}".format(element))
+            return False
     except Exception as e:
-        logger.error("{} {}".format(type(e), str(e)))
-        return None
+        logger.error("{} {} sending keys {} to element {}".format(type(e), str(e), keys, element))
+        return False
 
 
 def wa_test_login(wabrowser=None, logger=astra.baselogger, **kwargs):
+    '''
+    Tests if a web browser is signed into whatsapp
+    Arguments:
+        wabrowser - handle to a whatsapp signed in browser session, use wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        True if logged in, False if not
+    '''
     logger.info("Testing for Whatsapp Web Login by checking if the side pane is loaded...")
     try:
         sidepane = wa_get_element("sidepane", wabrowser=wabrowser, logeer=logger)
@@ -86,6 +126,14 @@ def wa_test_login(wabrowser=None, logger=astra.baselogger, **kwargs):
 
 
 def wa_login(wabrowser=None, logger=astra.baselogger, tries=3, **kwargs):
+    '''
+    Opens a web browser and presents it for QR scan, then tests if its logged in
+    Arguments:
+        wabrowser - handle to a browser session, uses wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        True if logged in, False if not
+    '''
     logger.info("Attempting to access Whatsapp Web")
     wabrowser.get("https://web.whatsapp.com")
     logger.info("\n ***************************************\n Please scan the QR code in the browser with your phone's Whatsapp App\n ***************************************\n")
@@ -96,6 +144,14 @@ def wa_login(wabrowser=None, logger=astra.baselogger, tries=3, **kwargs):
 
 
 def wa_get_conversations(all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
+    '''
+    Gets a list of conversations from the currently open whatsapp signed in browser as a list of dicts
+    Arguments:
+        wabrowser - handle to a whatsapp signed in browser session, use wa_test_login to test if logged in
+        logger - which logger to write output to
+    Returns:
+        True if logged in, False if not
+    '''
     conversations = []
     sidepane = wa_get_element("sidepane", wabrowser=wabrowser, logger=logger)
     wabrowser.execute_script("arguments[0].scrollTo(0,0)", sidepane)
