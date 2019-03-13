@@ -11,6 +11,7 @@ import datetime
 from flask_restful import reqparse, Api, Resource
 
 import urllib
+from . import smriti, Xetrapal
 # from samvad import xpal
 
 app = Flask(__name__)
@@ -27,6 +28,10 @@ CORS(app)
 
 api = Api(app)
 parser = reqparse.RequestParser()
+
+apismriti = smriti.XetrapalSmriti.objects(naam="xpal-api")[0]
+apixpal = Xetrapal(apismriti)
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

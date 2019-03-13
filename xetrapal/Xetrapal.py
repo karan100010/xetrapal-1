@@ -147,7 +147,12 @@ class Xetrapal(jeeva.Jeeva):
             for key in self.astras.keys():
                 kwargs[key] = self.astras[key]
             # print(args, kwargs)
-            return func(*args, **kwargs)
+            self.logger.info("Calling function {}".format(func))
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                self.logger.error("{} {} in function {}".format(type(e), str(e), func))
+
         call.__doc__ = func.__doc__
         return call
 

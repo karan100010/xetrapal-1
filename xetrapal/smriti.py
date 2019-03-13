@@ -52,7 +52,7 @@ class SmritiBase(PPrintMixin):
     observed_timestamp = fields.DateTimeField(default=datetime.datetime.utcnow, required=True)
     updated_timestamp = fields.DateTimeField(default=datetime.datetime.utcnow, required=True)
     created_timestamp = fields.DateTimeField()
-    naam = fields.StringField()
+    naam = fields.StringField(unique=True, required=False, sparse=True)
 
     def save(self, *args, **kwargs):
         self.updated_timestamp = datetime.datetime.utcnow()
@@ -60,7 +60,7 @@ class SmritiBase(PPrintMixin):
 
 
 class XetrapalSmriti(SmritiBase, DynamicDocument):
-    configfile = fields.StringField(unique=True, required=True)
+    configfile = fields.StringField(unique=True, required=False, sparse=True)
     lastsession = fields.ReferenceField('XetrapalSession')
 
 

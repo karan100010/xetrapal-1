@@ -10,12 +10,13 @@ import time
 import os
 from urllib.request import urlopen
 import colored
+from copy import deepcopy
 # JSON to store everything
 import json
 # To get some colored outputs
 # from pygments import highlight, lexers, formatters
 from uuid import uuid4
-from .aadhaar import XPAL_WAIT_TIME
+from . import aadhaar
 from . import astra
 from . import smriti
 import random
@@ -41,8 +42,18 @@ def load_xpal_smriti(configfilepath=None, logger=astra.baselogger, **kwargs):
         logger.error("{} {}".format(type(e), str(e)))
 
 
-def random_of_ranges(*ranges, **kwargs):
-    return random.choice(random.choice(ranges))
+def copy_smriti(smriti=None, logger=astra.baselogger, **kwargs):
+    """
+    Returns an unsaved copy of the smriti provided
+    Arguments
+        smriti - Object of class xetrapal.smriti.XetrapalSmriti
+        logger - Logger object to log to
+    """
+    logger.info("Creating a copy of smriti {}".format(smriti))
+    smriti2 = deepcopy(smriti)
+    smriti2.id = None
+    smriti2.configfile = None
+    return smriti2
 
 
 def get_color_json(dictionary=None, logger=astra.baselogger, **kwargs):
@@ -63,6 +74,7 @@ def load_config(configfile=None, logger=astra.baselogger, **kwargs):
     return config
 
 
+'''
 def get_section(config=None, sectionname=None, logger=astra.baselogger, **kwargs):
     if config.has_section(sectionname):
         p = config[sectionname]
@@ -70,7 +82,6 @@ def get_section(config=None, sectionname=None, logger=astra.baselogger, **kwargs
         a = {sectionname: dict(p)}
         c.read_dict(a)
         return c
-
 
 def get_jeeva_config(name=None, path=None, sessionpathprefix=None, logger=astra.baselogger, **kwargs):
     if path is None:
@@ -97,6 +108,8 @@ def load_data_from_json(jsonpath=None, logger=astra.baselogger, **kwargs):
         except Exception as e:
             print("Failed to load file because" + str(e))
     return data
+
+'''
 
 
 def save_data_to_jsonfile(data=None, filename=None, path=None, prefix=None, suffix=None, logger=astra.baselogger, **kwargs):
@@ -175,8 +188,8 @@ def close_modal(browser=None, logger=astra.baselogger, **kwargs):
 
 
 def wait(waittime="medium", logger=astra.baselogger, **kwargs):
-    t = XPAL_WAIT_TIME[waittime]
-    interval = random_of_ranges(range(t-5, t+2), range(t-2, t+5))
+    t = aadhaar.XPAL_WAIT_TIME[waittime]
+    interval = aadhaar.random_of_ranges(range(t-5, t+2), range(t-2, t+5))
     logger.info("Waiting for a %s duration : %s seconds" %
                 (waittime, interval))
     time.sleep(interval)
