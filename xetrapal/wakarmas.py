@@ -27,7 +27,8 @@ WAWCLASSMAP = {
     "sidepane-searchbox": "//input[@title='Search or start new chat']",
     "convpane": "//div[@class='_2nmDZ']",
     "convpane-item": "//div[@class='vW7d1']",
-
+    "media-download-button": "//div[@title='Download']",
+    "media-close-button": "//div[@title='Close']",
 }
 
 
@@ -143,6 +144,33 @@ def wa_login(wabrowser=None, logger=astra.baselogger, tries=3, **kwargs):
             break
 
 
+def wa_get_self_profile(path=None, pic=False, wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to get self profile")
+    try:
+        wa_click_element("menu-launcher", wabrowser=wabrowser, logger=logger)
+        karma.wait(logger=logger, waittime="short")
+        wa_click_element("menu-button-profile", wabrowser=wabrowser, logger=logger)
+        karma.wait(logger=logger)
+        profilepane = wa_get_element("sidepane-profile", wabrowser=wabrowser, logger=logger)
+        whatsapp_contact = profilepane.text.split("\n")[2]
+        profiledict = {"platform": "whatsapp", "whatsapp_contact": whatsapp_contact}
+        profile = wa_get_profile_smriti(profiledict, logger=logger)[0]
+        if not hasattr(profile, "files"):
+            profile.files = []
+        if pic is True:
+            profilepic = profilepane.find_element_by_tag_name("img")
+            profilepic_path = os.path.join(path, "whatsapp_profile_"+str(profile.id)+"_"+str(datetime.datetime.utcnow().timestamp())+".png")
+            profilepic.screenshot(profilepic_path)
+            profile.files.append(profilepic_path)
+            profile.save()
+            profile.reload()
+        wa_click_element("sidepane-back", wabrowser=wabrowser, logger=logger)
+        return profile
+    except Exception as e:
+        logger.error("{} {} trying to get own profile".format(type(e), str(e)))
+        return None
+
+
 def wa_get_conversations(all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
     '''
     Gets a list of conversations from the currently open whatsapp signed in browser as a list of dicts
@@ -195,22 +223,47 @@ def wa_search_conversations(text=None, exact=True, all=False, scrolls=10, wabrow
         return convs
 
 
-def wa_get_conv_messages(wabrowser=None, conversation=None, historical=False, logger=astra.baselogger, scrolls=10, **kwargs):
-    logger.info("Searching for messages in conversation {}".format(conversation.display_name))
-    # p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
-    messages = []
-    # seen_messages = []
-    # return messages
-    '''
-    for message in p:
-        m = wa_get_message(message, wabrowser, logger=logger)
-        if type(m) == dict and m != {}:
-            messages.append(m)
-    '''
-    return messages
+def wa_add_conversation_smriti(convdict=None, logger=astra.baselogger, **kwargs):
+    try:
+        waconversation = wasmriti.WhatsappConversation.objects(display_name=convdict['display_name'])
+        if len(waconversation) == 0:
+            waconversation = wasmriti.WhatsappConversation(**convdict)
+            waconversation.save()
+            return [waconversation]
+        else:
+            logger.error("Conversation already being tracked")
+            waconversation = waconversation[0]
+            waconversation.update(**convdict)
+            waconversation.save()
+            waconversation.reload()
+            return [waconversation]
+    except Exception as e:
+        logger.error("{} {} trying to add conversation dict {}".format(type(e), str(e), convdict))
+        return "{} {} trying to add conversation dict {}".format(type(e), str(e), convdict)
+
+
+def wa_update_conversation_smriti(conversation=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to update conversation {}".format(conversation.display_name))
+    try:
+        if wa_select_conv(conversation=conversation, wabrowser=wabrowser, logger=logger):
+            convs = wa_get_conversations(wabrowser=wabrowser, logger=logger)
+            for conv in convs:
+                if conv['display_name'] == conversation.display_name:
+                    conversation.update(**conv)
+                    conversation.save()
+                    conversation.reload()
+                    logger.info("Successfully updated conversation {}".format(conversation.display_name))
+                    return True
+        else:
+            logger.error("Could not select conversation {}".format(conversation.display_name))
+            return False
+    except Exception as e:
+        logger.error("{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name))
+        return "{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name)
 
 
 def wa_select_conv(conversation=None, text=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to select conversation {}".format(conversation.display_name))
     pane = wa_get_element("sidepane", wabrowser=wabrowser, logger=logger)
     wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
     convnames = []
@@ -241,6 +294,75 @@ def wa_select_conv(conversation=None, text=None, wabrowser=None, logger=astra.ba
         wabrowser.execute_script("arguments[0].scrollBy(0,500)", pane)
 
 
+def wa_get_conv_messages(conversation=None, historical=False,  scrolls=2, wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to get messages for conversation {}".format(conversation.display_name))
+    wa_select_conv(conversation=conversation, wabrowser=wabrowser, logger=logger)
+    messages = wa_get_cur_conv_messages(historical=historical, scrolls=scrolls, wabrowser=wabrowser, logger=logger)
+    # p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
+    return messages
+
+
+def wa_get_profile_smriti(profiledict=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to get or add and get profile dict {}".format(profiledict))
+    try:
+        waprofile = wasmriti.WhatsappProfile.objects(**profiledict)
+        if len(waprofile):
+            logger.error("Profile smriti already exists")
+            return list(waprofile)
+        else:
+            waprofile = wasmriti.WhatsappProfile(**profiledict)
+            if hasattr(waprofile, "whatsapp_contact") and waprofile.whatsapp_contact is not None and waprofile.whatsapp_contact != "":
+                if not aadhaar.engalpha.search(waprofile.whatsapp_contact):
+                    waprofile.whatsapp_contact = waprofile.whatsapp_contact.replace(" ", "")
+                waprofile.naam.append(waprofile.whatsapp_contact)
+            if hasattr(waprofile, "displayed_sender_name") and waprofile.displayed_sender_name is not None and waprofile.displayed_sender_name != "":
+                if not aadhaar.engalpha.search(waprofile.displayed_sender_name):
+                    waprofile.displayed_sender_name = waprofile.displayed_sender_name.replace(" ", "")
+                waprofile.naam.append(waprofile.displayed_sender_name)
+            if hasattr(waprofile, "displayed_sender") and waprofile.displayed_sender is not None and waprofile.displayed_sender != "":
+                if not aadhaar.engalpha.search(waprofile.displayed_sender):
+                    waprofile.displayed_sender = waprofile.displayed_sender.replace(" ", "")
+                waprofile.naam.append(waprofile.displayed_sender)
+            if hasattr(waprofile, "mobile_num") and waprofile.mobile_num is not None and waprofile.mobile_num != "":
+                if not aadhaar.engalpha.search(waprofile.mobile_num):
+                    waprofile.naam.append(waprofile.mobile_num.replace(" ", ""))
+                waprofile.naam.append(waprofile.mobile_num)
+            waprofile.naam = list(set(waprofile.naam))
+            waprofile.save()
+            waprofile.reload()
+            return[waprofile]
+    except Exception as e:
+        logger.error("{} {} trying to get profile dict {}".format(type(e), str(e), profiledict))
+        return "{} {} trying to get profile dict {}".format(type(e), str(e), profiledict)
+
+
+def wa_get_message_smriti(msgdict=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to get message with dict {}".format(msgdict))
+    try:
+        msg = wasmriti.WhatsappMessage.objects(**msgdict)
+        return list(msg)
+    except Exception as e:
+        logger.error("{} {} trying to get message with dict {}".format(type(e), str(e), msgdict))
+        return "{} {} trying to get message dict {}".format(type(e), str(e), msgdict)
+
+
+def wa_add_message_smriti(msgdict=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to add message with dict {}".format(msgdict))
+    try:
+        msg = wa_get_message_smriti(msgdict=msgdict, logger=logger)
+        if len(msg):
+            return [msg[0]]
+        else:
+            msg = wasmriti.WhatsappMessage(**msgdict)
+            msg.save()
+            msg.reload()
+            return [msg]
+    except Exception as e:
+        logger.error("{} {} trying to get message with dict {}".format(type(e), str(e), msgdict))
+        return "{} {} trying to get message dict {}".format(type(e), str(e), msgdict)
+
+
+# Needs cleanup
 def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs):
     msgdict = {}
     try:
@@ -254,46 +376,70 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
             msg = linebs.find("div", {"class": "copyable-text"})
             logger.info(msg)
             if msg:
+                msgdict['text_lines'] = [x.replace("'", "") for x in msg.strings]
+                msgdict['files'] = []
                 msgts = msg.get("data-pre-plain-text").split("] ")[0].replace("[", "").replace("]", "")
-                msgsender = msg.get("data-pre-plain-text").split("] ")[1]
                 if "m" in msgts.lower():
                     msgdict["created_timestamp"] = aadhaar.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M %p, %m/%d/%Y"))
                 else:
                     msgdict["created_timestamp"] = aadhaar.get_utc_ts(datetime.datetime.strptime(msgts, "%H:%M, %m/%d/%Y"))
                 msgdict['sender'] = {"platform": "whatsapp"}
+                msgsender = msg.get("data-pre-plain-text").split("] ")[1]
                 if not aadhaar.engalpha.search(msgsender):
                     msgdict['sender']['mobile_num'] = msgsender.replace(": ", "").replace(" ", "")
                     logger.info("Mobile Num: {}".format(msgdict['sender']))
                 else:
                     msgdict['sender']['whatsapp_contact'] = msgsender.replace(": ", "")
                     logger.info("Whatsapp Contact: {}".format(msgdict['sender']))
-                msgdict['text_lines'] = [x.replace("'", "") for x in msg.strings]
+                if "whatsapp_contact" not in msgdict['sender'].keys():
+                    try:
+                        msgdict['sender']['displayed_sender'] = linebs.find("span", {"class": "RZ7GO"}).text
+                        msgdict['sender']['displayed_sender_name'] = linebs.find("span", {"class": "_3Ye_R"}).text
+                    except Exception as e:
+                        logger.error("Could not get display name and sender")
+                sender_wa_profile = None
                 try:
-                    msgdict['sender']['displayed_sender'] = linebs.find("span", {"class": "RZ7GO"}).text
-                    msgdict['sender']['displayed_sender_name'] = linebs.find("span", {"class": "_3Ye_R"}).text
+                    sender_wa_profile = wa_get_profile_smriti(msgdict['sender'], logger=logger)
+                    if type(sender_wa_profile) == list and sender_wa_profile != []:
+                        sender_wa_profile = sender_wa_profile[0]
                 except Exception as e:
-                    logger.error("Could not get display name and sender")
-                images = message[0].find_all("img")
-                if len(images):
-                    image = line.find_element_by_tag_name("img")
-                    if "blob" in image.get_attribute("src"):
-                        image.click()
-                        karma.wait(logger=logger)
-                        files = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
-                        wabrowser.find_element_by_xpath("//div[@title='Download']").click()
-                        karma.wait(waittime="long", logger=logger)
-                        newfiles = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
-                        logger.info("Downloaded file {}".format(list(set(newfiles)-set(files))[0]))
-                        msgdict['file'] = os.path.join(wabrowser.profile.default_preferences['browser.download.dir'], list(set(newfiles)-set(files))[0])
-                        karma.wait(logger=logger)
-                        wabrowser.find_element_by_xpath("//div[@title='Close']").click()
-                        karma.wait(logger=logger)
-            if msgdict != {}:
+                    logger.error("{} {} trying to add sender profile")
                 msgdict['platform'] = "whatsapp"
-                logger.info(msgdict)
-                return msgdict
-        else:
-            return "No message in line"
+                logger.info("{}".format(msgdict))
+                msg = wa_get_message_smriti(msgdict, logger=logger)
+                if type(msg) == list and msg != []:
+                    logger.error("Message smriti already exists")
+                    return msg[0]
+                else:
+                    images = message[0].find_all("img")
+                    if len(images):
+                        image = line.find_element_by_tag_name("img")
+                        if "blob" in image.get_attribute("src"):
+                            image.click()
+                            karma.wait(logger=logger)
+                            files = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
+                            wa_click_element(element="media-download-button", wabrowser=wabrowser, logger=logger)
+                            # wabrowser.find_element_by_xpath("//div[@title='Download']").click()
+                            karma.wait(waittime="long", logger=logger)
+                            newfiles = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
+                            logger.info("Downloaded file {}".format(list(set(newfiles)-set(files))[0]))
+                            # msgdict['file'] = os.path.join(wabrowser.profile.default_preferences['browser.download.dir'], list(set(newfiles)-set(files))[0])
+                            msgdict['files'].append(os.path.join(wabrowser.profile.default_preferences['browser.download.dir'], list(set(newfiles)-set(files))[0]))
+                            karma.wait(logger=logger)
+                            # wabrowser.find_element_by_xpath("//div[@title='Close']").click()
+                            wa_click_element(element="media-close-button", wabrowser=wabrowser, logger=logger)
+                            karma.wait(logger=logger)
+                    msg = wa_add_message_smriti(msgdict=msgdict, logger=logger)
+                    if type(msg) == list and msg != []:
+                        msg = msg[0]
+                        if sender_wa_profile is not None:
+                            msg.sent_by = sender_wa_profile
+                            msg.save()
+                            msg.reload()
+                        return msg
+            else:
+                logger.error("Could not extract a message")
+        return "No message in line"
     except Exception as e:
         logger.error("{} {}".format(type(e), str(e)))
         return "{} {}".format(type(e), str(e))
@@ -303,12 +449,16 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
     convpane = wa_get_element("convpane", wabrowser=wabrowser, logger=logger)
     scrolled = 0
     lines = []
+    msgs = []
     while True:
         numlines = len(lines)
         wabrowser.execute_script("arguments[0].scrollTo(0,0)", convpane)
+        karma.wait(waittime="long", logger=logger)
         # lines = wabrowser.find_elements_by_class_name("vW7d1")
         lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
-        karma.wait(waittime="long", logger=logger)
+        for line in lines:
+            msg = wa_get_message(line=line, wabrowser=wabrowser, logger=logger)
+            msgs.append(msg)
         newnumlines = len(lines)
         if historical is not True:
             if scrolled == scrolls:
@@ -316,59 +466,7 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
         if newnumlines == numlines:
             break
         scrolled += 1
-    msgs = []
-    for line in lines:
-        msgdict = wa_get_message(line=line, wabrowser=wabrowser, logger=logger)
-        logger.info("{}".format(msgdict))
-        if type(msgdict) == dict:
-            msg = wasmriti.WhatsappMessage.objects(**msgdict)
-            if len(msg):
-                logger.error("Duplicate")
-            else:
-                msg = wasmriti.WhatsappMessage(**msgdict)
-                msg.save()
-                msgs.append(msg)
     return msgs
-    # return lines
-
-
-def wa_add_conversation(convdict=None, logger=astra.baselogger, **kwargs):
-    try:
-        waconversation = wasmriti.WhatsappConversation.objects(display_name=convdict['display_name'])
-        if len(waconversation) == 0:
-            waconversation = wasmriti.WhatsappConversation(**convdict)
-            waconversation.save()
-            return [waconversation]
-        else:
-            logger.error("Conversation already being tracked")
-            waconversation = waconversation[0]
-            waconversation.update(**convdict)
-            waconversation.save()
-            waconversation.reload()
-            return [waconversation]
-    except Exception as e:
-        logger.error("{} {} trying to add conversation dict {}".format(type(e), str(e), convdict))
-        return "{} {} trying to add conversation dict {}".format(type(e), str(e), convdict)
-
-
-def wa_update_conversation(conversation=None, wabrowser=None, logger=astra.baselogger, **kwargs):
-    logger.info("Trying to update conversation {}".format(conversation.display_name))
-    try:
-        if wa_select_conv(conversation=conversation, wabrowser=wabrowser, logger=logger):
-            convs = wa_get_conversations(wabrowser=wabrowser, logger=logger)
-            for conv in convs:
-                if conv['display_name'] == conversation.display_name:
-                    conversation.update(**conv)
-                    conversation.save()
-                    conversation.reload()
-                    logger.info("Successfully updated conversation {}".format(conversation.display_name))
-                    return True
-        else:
-            logger.error("Could not select conversation {}".format(conversation.display_name))
-            return False
-    except Exception as e:
-        logger.error("{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name))
-        return "{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name)
 
 
 def wa_send_text(wabrowser, text, logger=astra.baselogger):

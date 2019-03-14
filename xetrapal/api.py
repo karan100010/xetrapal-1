@@ -7,10 +7,10 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 # from flask_mongoengine import MongoEngine
 import json
-import datetime
+# import datetime
 from flask_restful import reqparse, Api, Resource
 from flask_mongoengine import MongoEngine
-import urllib
+# import urllib
 from . import smriti, Xetrapal, wakarmas, wasmriti
 # from samvad import xpal
 
@@ -36,6 +36,22 @@ apixpal = Xetrapal(apismriti)
 apixpal.dhaarana(wakarmas)
 
 
+def ujsonify(dictionary, logger=apixpal.logger):
+    logger.info("Trying to jsonify dictionary {}".format(dictionary))
+    if "resp" not in dictionary.keys() or "status" not in dictionary.keys():
+        return jsonify({"resp": "error Jsonifying", "status": "error"})
+    else:
+        resp = dictionary['resp']
+        status = dictionary['status']
+        if type(resp) == list:
+            for response in resp:
+                if hasattr(response, "files"):
+                    logger.info("Adding urls")
+                    response.urls = [x.replace(apixpal.datapath, apixpal.urlbase) for x in response['files']]
+                    response.save()
+        return jsonify({"resp": resp, "status": status})
+
+
 class ApiResource(Resource):
     def get(self, command=None):
         status = "success"
@@ -52,7 +68,7 @@ class ApiResource(Resource):
         except Exception as e:
                 resp = "error: {} {}".format(type(e), str(e))
                 status = "error"
-        return jsonify({"resp": resp, "status": status})
+        return ujsonify({"resp": resp, "status": status})
 
 
 api.add_resource(ApiResource, "/", endpoint="api-root")
@@ -77,7 +93,7 @@ class XetrapalSessionResource(Resource):
         except Exception as e:
                 resp = "error: {} {}".format(type(e), str(e))
                 status = "error"
-        return jsonify({"resp": resp, "status": status})
+        return ujsonify({"resp": resp, "status": status})
 
 
 api.add_resource(XetrapalSessionResource, "/xetrapal_session", endpoint="xetrapal_session")
@@ -103,7 +119,7 @@ class XetrapalSmritiResource(Resource):
         except Exception as e:
                 resp = "error: {} {}".format(type(e), str(e))
                 status = "error"
-        return jsonify({"resp": resp, "status": status})
+        return ujsonify({"resp": resp, "status": status})
 
 
 api.add_resource(XetrapalSmritiResource, "/xetrapal_smriti", endpoint="xetrapal_smriti")
@@ -129,12 +145,62 @@ class WhatsappConversationResource(Resource):
         except Exception as e:
                 resp = "error: {} {}".format(type(e), str(e))
                 status = "error"
-        return jsonify({"resp": resp, "status": status})
+        return ujsonify({"resp": resp, "status": status})
 
 
 api.add_resource(WhatsappConversationResource, "/whatsapp_conversation", endpoint="whatsapp_conversation")
 api.add_resource(WhatsappConversationResource, "/whatsapp_conversation/by_id/<string:waconv_id>", endpoint="whatsapp_conversation_id")
 api.add_resource(WhatsappConversationResource, "/whatsapp_conversation/by_name/<string:display_name>", endpoint="whatsapp_conversation_name")
+
+
+class WhatsappMessageResource(Resource):
+    def get(self, wamsg_id=None):
+        status = "success"
+        resp = []
+        try:
+            apixpal.session.save()
+            apixpal.smriti.reload()
+            apixpal.session.reload()
+            apixpal.smriti.lastsession.reload()
+            if wamsg_id is not None:
+                resp = [wasmriti.WhatsappMessage.objects.with_id(wamsg_id)]
+            else:
+                resp = wasmriti.WhatsappMessage.objects()
+        except Exception as e:
+                resp = "error: {} {}".format(type(e), str(e))
+                status = "error"
+        return ujsonify({"resp": resp, "status": status})
+
+
+api.add_resource(WhatsappMessageResource, "/whatsapp_message", endpoint="whatsapp_message")
+api.add_resource(WhatsappMessageResource, "/whatsapp_message/by_id/<string:wamsg_id>", endpoint="whatsapp_message_id")
+# api.add_resource(WhatsappMessageResource, "/whatsapp_message/by_name/<string:display_name>", endpoint="whatsapp_message_name")
+
+
+class WhatsappProfileResource(Resource):
+    def get(self, waprof_id=None, naam=None):
+        status = "success"
+        resp = []
+        try:
+            apixpal.session.save()
+            apixpal.smriti.reload()
+            apixpal.session.reload()
+            apixpal.smriti.lastsession.reload()
+            if waprof_id is not None:
+                resp = [wasmriti.WhatsappProfile.objects.with_id(waprof_id)]
+            elif naam is not None:
+                resp = list(wasmriti.WhatsappProfile.objects(naam=naam))
+            else:
+                resp = list(wasmriti.WhatsappProfile.objects())
+        except Exception as e:
+                resp = "error: {} {}".format(type(e), str(e))
+                status = "error"
+        return ujsonify({"resp": resp, "status": status})
+
+
+api.add_resource(WhatsappProfileResource, "/whatsapp_profile", endpoint="whatsapp_profile")
+api.add_resource(WhatsappProfileResource, "/whatsapp_profile/by_id/<string:waprof_id>", endpoint="whatsapp_profile_id")
+api.add_resource(WhatsappProfileResource, "/whatsapp_profile/by_name/<string:naam>", endpoint="whatsapp_profile_naam")
 
 
 if __name__ == '__main__':

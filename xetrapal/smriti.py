@@ -52,7 +52,8 @@ class SmritiBase(PPrintMixin):
     observed_timestamp = fields.DateTimeField(default=datetime.datetime.utcnow, required=True)
     updated_timestamp = fields.DateTimeField(default=datetime.datetime.utcnow, required=True)
     created_timestamp = fields.DateTimeField()
-    naam = fields.StringField(unique=True, required=False, sparse=True)
+    naam = fields.ListField()
+    files = fields.ListField()
 
     def save(self, *args, **kwargs):
         self.updated_timestamp = datetime.datetime.utcnow()

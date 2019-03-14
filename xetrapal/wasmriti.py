@@ -26,7 +26,7 @@ class WhatsappConversation(smriti.SmritiBase, DynamicDocument):
 
 
 class WhatsappMessage(smriti.SmritiBase, DynamicDocument):
-    display_name = fields.StringField(unique=True, required=False, sparse=True)
-    display_lines = fields.ListField()
+    text_lines = fields.ListField()
     observed_by = fields.ReferenceField(WhatsappProfile)
     observed_in = fields.ReferenceField(WhatsappConversation)
+    sent_by = fields.ReferenceField(WhatsappProfile)
