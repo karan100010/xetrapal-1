@@ -11,13 +11,13 @@ import datetime
 from flask_mongoengine import QuerySet
 from . import aadhaar
 # from samvad import utils
-# import json
-# import bson
+import json
+import bson
 
 
 class PPrintMixin(object):
     def __str__(self):
-        return '<{}: id={!r}>'.format(type(self).__name__, self.id)
+        return '{}: id={!r}'.format(type(self).__name__, self.id)
 
     def __repr__(self):
         attrs = []
@@ -62,9 +62,16 @@ class SmritiBase(PPrintMixin):
 class XetrapalSmriti(SmritiBase, DynamicDocument):
     configfile = fields.StringField(unique=True, required=False, sparse=True)
     lastsession = fields.ReferenceField('XetrapalSession')
+    meta = {"queryset_class": CustomQuerySet}
+
+    def to_json(self):
+        data = self.to_mongo()
+        data['lastsession'] = json.loads(self.lastsession.to_json())
+        return bson.json_util.dumps(data)
 
 
 class XetrapalSession(SmritiBase, DynamicDocument):
     session_name = fields.StringField(unique=True, required=True)
     source_smriti = fields.ReferenceField(XetrapalSmriti)
     functions_loaded = fields.ListField(default=[])
+    sessionurlbase = fields.StringField()

@@ -44,11 +44,11 @@ class Xetrapal(jeeva.Jeeva):
         self.vaahans = {}
         self.astras = {}
         self.functions = []
+        # self.save_profile()
+        self.dhaarana(astra)
+        self.dhaarana(karma)
         self.update_astras()
         self.update_vaahans()
-        # self.save_profile()
-        self.load_module(astra)
-        self.load_module(karma)
 
     def help(self, *args, **kwargs):
         if len(args) == 0:
@@ -71,7 +71,7 @@ class Xetrapal(jeeva.Jeeva):
         # self.set_property("astras", astras)
         self.session.astras = self.astras
         for ast in self.session.astras.keys():
-            self.session.astras[ast] = str(self.session.astras[ast])
+            self.session.astras[ast] = str(self.astras[ast])
         self.session.save()
         self.session.reload()
 
@@ -138,8 +138,8 @@ class Xetrapal(jeeva.Jeeva):
         self.kartarefs.append(kartaref)
         return kartaref
 
-    def load_func(self, func):
-        def call(*args, **kwargs):
+    def load_karma(self, func):
+        def kriya(*args, **kwargs):
             args = list(args)
             kwargs['logger'] = self.logger
             kwargs['path'] = self.sessiondownloadpath
@@ -147,21 +147,21 @@ class Xetrapal(jeeva.Jeeva):
             for key in self.astras.keys():
                 kwargs[key] = self.astras[key]
             # print(args, kwargs)
-            self.logger.info("Calling function {}".format(func))
+            self.logger.info("Performing karma {}".format(func.__name__))
             try:
                 return func(*args, **kwargs)
             except Exception as e:
                 self.logger.error("{} {} in function {}".format(type(e), str(e), func))
 
-        call.__doc__ = func.__doc__
-        return call
+        kriya.__doc__ = func.__doc__
+        return kriya
 
-    def load_module(self, module):
+    def dhaarana(self, module):
         self.logger.info("Trying to load module {}".format(module.__name__))
         try:
             functions_list = [o for o in getmembers(module) if isfunction(o[1])]
             for func in functions_list:
-                self.__dict__[func[0]] = self.load_func(func[1])
+                self.__dict__[func[0]] = self.load_karma(func[1])
             self.functions += [f[0] for f in functions_list]
             self.functions = list(set(self.functions))
             self.functions.sort()
@@ -169,6 +169,7 @@ class Xetrapal(jeeva.Jeeva):
             self.session.functions_loaded = list(set(self.session.functions_loaded))
             self.session.save()
             self.session.reload()
+            self.smriti.reload()
             self.logger.info("I now have functions {}".format(self.functions))
         except Exception as e:
             self.logger.error("Error loading module {}, {} {}".format(module.__name__, type(e), str(e)))

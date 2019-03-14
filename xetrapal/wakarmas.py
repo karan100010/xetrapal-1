@@ -183,10 +183,16 @@ def wa_get_conversations(all=False, scrolls=10, wabrowser=None, logger=astra.bas
     return conversations
 
 
-def wa_search_conversations(text=None, all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
+def wa_search_conversations(text=None, exact=True, all=False, scrolls=10, wabrowser=None, logger=astra.baselogger, **kwargs):
     wa_send_keys_to_element("sidepane-searchbox", text, clearfirst=True, wabrowser=wabrowser, logger=logger)
     karma.wait(logger=logger, waittime="medium")
-    return wa_get_conversations(all=all, scrolls=scrolls, wabrowser=wabrowser, logger=logger)
+    convs = wa_get_conversations(all=all, scrolls=scrolls, wabrowser=wabrowser, logger=logger)
+    if exact is True:
+        for conv in convs:
+            if conv['display_name'] == text:
+                return conv
+    else:
+        return convs
 
 
 def wa_get_conv_messages(wabrowser=None, conversation=None, historical=False, logger=astra.baselogger, scrolls=10, **kwargs):
@@ -324,6 +330,45 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
                 msgs.append(msg)
     return msgs
     # return lines
+
+
+def wa_add_conversation(convdict=None, logger=astra.baselogger, **kwargs):
+    try:
+        waconversation = wasmriti.WhatsappConversation.objects(display_name=convdict['display_name'])
+        if len(waconversation) == 0:
+            waconversation = wasmriti.WhatsappConversation(**convdict)
+            waconversation.save()
+            return [waconversation]
+        else:
+            logger.error("Conversation already being tracked")
+            waconversation = waconversation[0]
+            waconversation.update(**convdict)
+            waconversation.save()
+            waconversation.reload()
+            return [waconversation]
+    except Exception as e:
+        logger.error("{} {} trying to add conversation dict {}".format(type(e), str(e), convdict))
+        return "{} {} trying to add conversation dict {}".format(type(e), str(e), convdict)
+
+
+def wa_update_conversation(conversation=None, wabrowser=None, logger=astra.baselogger, **kwargs):
+    logger.info("Trying to update conversation {}".format(conversation.display_name))
+    try:
+        if wa_select_conv(conversation=conversation, wabrowser=wabrowser, logger=logger):
+            convs = wa_get_conversations(wabrowser=wabrowser, logger=logger)
+            for conv in convs:
+                if conv['display_name'] == conversation.display_name:
+                    conversation.update(**conv)
+                    conversation.save()
+                    conversation.reload()
+                    logger.info("Successfully updated conversation {}".format(conversation.display_name))
+                    return True
+        else:
+            logger.error("Could not select conversation {}".format(conversation.display_name))
+            return False
+    except Exception as e:
+        logger.error("{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name))
+        return "{} {} trying to update conversation {}".format(type(e), str(e), conversation.display_name)
 
 
 def wa_send_text(wabrowser, text, logger=astra.baselogger):

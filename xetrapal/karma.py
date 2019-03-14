@@ -21,6 +21,18 @@ from . import astra
 from . import smriti
 import random
 # import os
+import mongoengine
+
+
+def get_smriti_status(logger=astra.baselogger, **kwargs):
+    dbstatus = {}
+    db = mongoengine.connection.get_db()
+    dbstatus['dbname'] = db.name
+    logger.info("Connected to db {}".format(db.name))
+    dbstatus['smritis'] = {}
+    for key in db.collection_names():
+        dbstatus['smritis'][key] = db.get_collection(key).count()
+    return dbstatus
 
 
 def load_xpal_smriti(configfilepath=None, logger=astra.baselogger, **kwargs):

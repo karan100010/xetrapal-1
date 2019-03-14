@@ -21,6 +21,9 @@ class Jeeva(object):
 		self.smriti = xpalsmriti
 		# self.jsonprofile = {}
 		self.name = self.smriti.name
+		if self.smriti.urlbase:
+			self.urlbase = self.smriti.urlbase
+
 		self.logger = astra.get_xpal_logger(self.name)
 		self.logger.info("My name is " + colored.stylize(self.name, colored.fg("red")))
 		self.setup_disk()
@@ -79,16 +82,19 @@ class Jeeva(object):
 
 	def start_session(self):
 		# sessionpathprefix = self.config.get("Jeeva", "sessionpathprefix")
-		sessionpathprefix = self.smriti.sessionpathprefix
+		# sessionpathprefix = self.smriti.sessionpathprefix
+		sessionpathprefix = self.name.replace(" ", "")
 		ts = datetime.now()
 		sessiondir = sessionpathprefix+"-"+ts.strftime("%Y%b%d-%H%M%S")
 		self.sessionpath = os.path.join(self.datapath, sessiondir)
 		self.sessiondownloadpath = os.path.join(self.sessionpath, "downloads")
 		self.sessionjsonpath = os.path.join(self.sessionpath, "json")
+		self.sessionurlbase = self.urlbase+"/xetrapal-data/"+sessiondir
 		sessiondata = {}
 		sessiondata['sessionpath'] = self.sessionpath
 		sessiondata['sessiondownloadpath'] = self.sessiondownloadpath
 		sessiondata['sessionjsonpath'] = self.sessionjsonpath
+		sessiondata['sessionurlbase'] = self.sessionurlbase
 		if not os.path.exists(self.sessionpath):
 			self.logger.info("Creating a new path for this session at %s" % colored.stylize(self.sessionpath, colored.fg("yellow")))
 			os.mkdir(self.sessionpath)

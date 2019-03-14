@@ -30,11 +30,11 @@ __version__ = '0.0.1'
 
 from . import aadhaar
 from . import karma
-from . import astra 
+from . import astra
 # from . import jeeva import *
 # from . import vaahan
 import mongoengine
-mongoengine.connect('xetrapal-smriti', alias='default')
+mongoengine.connect('xetrapal-smritibase', alias='default')
 from . import smriti
 
 from .Xetrapal import Xetrapal

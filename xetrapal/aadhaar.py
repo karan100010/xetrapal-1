@@ -4,7 +4,7 @@
 '''
 import datetime
 import re
-
+import random
 bannertext = '''_______________________
 < Xetrapal (क्षेत्रपाल) >
  ----------------------
@@ -40,6 +40,10 @@ XPAL_UTC_OFFSET_TIMEDELTA = datetime.datetime.utcnow() - datetime.datetime.now()
 nospec = re.compile(r"[^A-Za-z0-9\n @.'\-+()]+")
 notnum = re.compile(r"[^0-9+()\-]+")
 engalpha = re.compile(r"[a-zA-Z]")
+
+
+def random_of_ranges(*ranges):
+    return random.choice(random.choice(ranges))
 
 
 def get_utc_ts(ts, **kwargs):
