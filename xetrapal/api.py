@@ -165,7 +165,7 @@ class WhatsappMessageResource(Resource):
             if wamsg_id is not None:
                 resp = [wasmriti.WhatsappMessage.objects.with_id(wamsg_id)]
             else:
-                resp = wasmriti.WhatsappMessage.objects()
+                resp = list(wasmriti.WhatsappMessage.objects())
         except Exception as e:
                 resp = "error: {} {}".format(type(e), str(e))
                 status = "error"

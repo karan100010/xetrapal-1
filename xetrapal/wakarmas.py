@@ -10,6 +10,7 @@ from . import aadhaar
 from bs4 import BeautifulSoup
 import os
 import datetime
+from copy import deepcopy
 from . import wasmriti
 # Fire and Forget Astras, to be run with {'msg':'run','func':function_object,'args':(),'kwargs':{}}
 
@@ -264,6 +265,7 @@ def wa_update_conversation_smriti(conversation=None, wabrowser=None, logger=astr
 
 def wa_select_conv(conversation=None, text=None, wabrowser=None, logger=astra.baselogger, **kwargs):
     logger.info("Trying to select conversation {}".format(conversation.display_name))
+    wa_get_element("sidepane-searchbox", wabrowser=wabrowser, logger=logger).clear()
     pane = wa_get_element("sidepane", wabrowser=wabrowser, logger=logger)
     wabrowser.execute_script("arguments[0].scrollTo(0,0)", pane)
     convnames = []
@@ -302,7 +304,11 @@ def wa_get_conv_messages(conversation=None, historical=False,  scrolls=2, wabrow
     return messages
 
 
-def wa_get_profile_smriti(profiledict=None, logger=astra.baselogger, **kwargs):
+def wa_get_profile_smriti(profiledictin=None, logger=astra.baselogger, **kwargs):
+    profiledict = deepcopy(profiledictin)
+    for key in profiledict.keys():
+        if not aadhaar.engalpha.search(profiledict[key]):
+            profiledict[key] = profiledict[key].replace(" ", "")
     logger.info("Trying to get or add and get profile dict {}".format(profiledict))
     try:
         waprofile = wasmriti.WhatsappProfile.objects(**profiledict)
@@ -310,24 +316,12 @@ def wa_get_profile_smriti(profiledict=None, logger=astra.baselogger, **kwargs):
             logger.error("Profile smriti already exists")
             return list(waprofile)
         else:
+            profiledict['naam'] = []
+            for key in ["whatsapp_contact", "displayed_sender_name", "displayed_sender", "mobile_num"]:
+                if key in profiledict.keys():
+                    profiledict['naam'].append(profiledict[key])
+            profiledict['naam'] = list(set(profiledict['naam']))
             waprofile = wasmriti.WhatsappProfile(**profiledict)
-            if hasattr(waprofile, "whatsapp_contact") and waprofile.whatsapp_contact is not None and waprofile.whatsapp_contact != "":
-                if not aadhaar.engalpha.search(waprofile.whatsapp_contact):
-                    waprofile.whatsapp_contact = waprofile.whatsapp_contact.replace(" ", "")
-                waprofile.naam.append(waprofile.whatsapp_contact)
-            if hasattr(waprofile, "displayed_sender_name") and waprofile.displayed_sender_name is not None and waprofile.displayed_sender_name != "":
-                if not aadhaar.engalpha.search(waprofile.displayed_sender_name):
-                    waprofile.displayed_sender_name = waprofile.displayed_sender_name.replace(" ", "")
-                waprofile.naam.append(waprofile.displayed_sender_name)
-            if hasattr(waprofile, "displayed_sender") and waprofile.displayed_sender is not None and waprofile.displayed_sender != "":
-                if not aadhaar.engalpha.search(waprofile.displayed_sender):
-                    waprofile.displayed_sender = waprofile.displayed_sender.replace(" ", "")
-                waprofile.naam.append(waprofile.displayed_sender)
-            if hasattr(waprofile, "mobile_num") and waprofile.mobile_num is not None and waprofile.mobile_num != "":
-                if not aadhaar.engalpha.search(waprofile.mobile_num):
-                    waprofile.naam.append(waprofile.mobile_num.replace(" ", ""))
-                waprofile.naam.append(waprofile.mobile_num)
-            waprofile.naam = list(set(waprofile.naam))
             waprofile.save()
             waprofile.reload()
             return[waprofile]
@@ -337,9 +331,12 @@ def wa_get_profile_smriti(profiledict=None, logger=astra.baselogger, **kwargs):
 
 
 def wa_get_message_smriti(msgdict=None, logger=astra.baselogger, **kwargs):
-    logger.info("Trying to get message with dict {}".format(msgdict))
+    if "files" in msgdict.keys():
+        msgdict2 = deepcopy(msgdict)
+        msgdict2.pop("files")
+    logger.info("Trying to get message with dict {}".format(msgdict2))
     try:
-        msg = wasmriti.WhatsappMessage.objects(**msgdict)
+        msg = wasmriti.WhatsappMessage.objects(**msgdict2)
         return list(msg)
     except Exception as e:
         logger.error("{} {} trying to get message with dict {}".format(type(e), str(e), msgdict))
@@ -415,6 +412,7 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
                     if len(images):
                         image = line.find_element_by_tag_name("img")
                         if "blob" in image.get_attribute("src"):
+                            logger.info("Trying to download image...")
                             image.click()
                             karma.wait(logger=logger)
                             files = os.listdir(wabrowser.profile.default_preferences['browser.download.dir'])
