@@ -301,6 +301,11 @@ def wa_get_conv_messages(conversation=None, historical=False,  scrolls=2, wabrow
     wa_select_conv(conversation=conversation, wabrowser=wabrowser, logger=logger)
     messages = wa_get_cur_conv_messages(historical=historical, scrolls=scrolls, wabrowser=wabrowser, logger=logger)
     # p = wa_get_conv_message_lines(wabrowser=wabrowser, text=conversation.display_name, historical=historical, logger=logger, scrolls=scrolls)
+
+    for msg in messages:
+        msg.observed_in = conversation
+        msg.save()
+        msg.reload()
     return messages
 
 
@@ -437,7 +442,7 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
                         return msg
             else:
                 logger.error("Could not extract a message")
-        return "No message in line"
+        return None
     except Exception as e:
         logger.error("{} {}".format(type(e), str(e)))
         return "{} {}".format(type(e), str(e))
@@ -456,7 +461,8 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
         lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
         for line in lines:
             msg = wa_get_message(line=line, wabrowser=wabrowser, logger=logger)
-            msgs.append(msg)
+            if msg is not None:
+                msgs.append(msg)
         newnumlines = len(lines)
         if historical is not True:
             if scrolled == scrolls:
