@@ -163,7 +163,7 @@ def wa_get_self_profile(path=None, pic=False, wabrowser=None, logger=astra.basel
         profilepane = wa_get_element("sidepane-profile", wabrowser=wabrowser, logger=logger)
         whatsapp_contact = profilepane.text.split("\n")[2]
         profiledict = {"platform": "whatsapp", "whatsapp_contact": whatsapp_contact}
-        profile = wa_get_profile_smriti(profiledict, logger=logger)[0]
+        profile = wa_add_profile_smriti(profiledict, logger=logger)[0]
         if not hasattr(profile, "files"):
             profile.files = []
         if pic is True:
@@ -511,7 +511,8 @@ def wa_export_message_smriti(msgdict=None, path=None, logger=astra.baselogger, *
         if len(msg) and type(msg) != str:
             msgs = [m.to_mongo().to_dict() for m in msg]
         for msg in msgs:
-            msg['observed_by'] = wasmriti.WhatsappProfile.objects.with_id(msg['observed_by']).naam
+            if "observed_by" in msg.keys():
+                msg['observed_by'] = wasmriti.WhatsappProfile.objects.with_id(msg['observed_by']).naam
             if "observed_in" in msg.keys():
                 msg['observed_in'] = wasmriti.WhatsappConversation.objects.with_id(msg['observed_in']).display_name
             msg['_id'] = str(msg['_id'])
