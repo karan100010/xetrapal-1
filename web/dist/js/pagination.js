@@ -5,7 +5,11 @@
 }*/
 //serverip="192.168.56.101"
 search_query={}
-assperpage=10
+var assperpage=10
+var msgsperpage  = assperpage
+var msg_search_query = search_query
+var msg_sort_field = "created_timestamp"
+var msg_sort_order = "descending"
 const xetrapal_sessionApp = new Vue({
     el: '#xetrapal_session-app',
     data: {
@@ -26,15 +30,23 @@ const xetrapal_sessionApp = new Vue({
                     config: { headers: {'Content-Type': 'application/json' }}
             })
             .then(response => {
-                console.log(response.data)
+                //console.log(response.data)
                 this.posts = response.data.resp;
                 sort_field = "updated_timestamp"
                 sort_order = "descending"
+                this.posts.forEach(function(post){
+                  if(post.hasOwnProperty("files")){
+                    post.urls=[]
+                    post.files.forEach(function(file){
+                      post.urls.push(file.replace(data.datapath, data.urlbase))
+                    })
+                  }
+                })
                 this.posts = this.posts.sort(function(a,b){
                   // Turn your strings into dates, and then subtract them
                   // to get a value that is either negative, positive, or zero.
-                  //console.log(sort_field,sort_order)
-                  //console.log(a.assignment[sort_field],b.assignment[sort_field])
+                  ////console.log(sort_field,sort_order)
+                  ////console.log(a.assignment[sort_field],b.assignment[sort_field])
                   val= new Date(a[sort_field].$date) - new Date(b[sort_field].$date);
                   if (sort_order==="ascending"){
                       return val
@@ -44,10 +56,10 @@ const xetrapal_sessionApp = new Vue({
                   }
                 });
 
-                console.log(this.posts)
+                //console.log(this.posts)
             })
             .catch(response => {
-                console.log(response);
+                //console.log(response);
             });
         },
         setPages () {
@@ -101,15 +113,23 @@ const xetrapal_smritiApp = new Vue({
                     config: { headers: {'Content-Type': 'application/json' }}
             })
             .then(response => {
-                console.log(response.data)
+                //console.log(response.data)
                 this.posts = response.data.resp;
                 sort_field = "updated_timestamp"
                 sort_order = "descending"
+                this.posts.forEach(function(post){
+                  if(post.hasOwnProperty("files")){
+                    post.urls=[]
+                    post.files.forEach(function(file){
+                      post.urls.push(file.replace(data.datapath, data.urlbase))
+                    })
+                  }
+                })
                 this.posts = this.posts.sort(function(a,b){
                   // Turn your strings into dates, and then subtract them
                   // to get a value that is either negative, positive, or zero.
-                  //console.log(sort_field,sort_order)
-                  //console.log(a.assignment[sort_field],b.assignment[sort_field])
+                  ////console.log(sort_field,sort_order)
+                  ////console.log(a.assignment[sort_field],b.assignment[sort_field])
                   val= new Date(a[sort_field].$date) - new Date(b[sort_field].$date);
                   if (sort_order==="ascending"){
                       return val
@@ -119,10 +139,10 @@ const xetrapal_smritiApp = new Vue({
                   }
                 });
 
-                console.log(this.posts)
+                //console.log(this.posts)
             })
             .catch(response => {
-                console.log(response);
+                //console.log(response);
             });
         },
         setPages () {
@@ -176,15 +196,23 @@ const whatsapp_conversationApp = new Vue({
                     config: { headers: {'Content-Type': 'application/json' }}
             })
             .then(response => {
-                console.log(response.data)
+                //console.log(response.data)
                 this.posts = response.data.resp;
                 sort_field = "updated_timestamp"
                 sort_order = "descending"
+                this.posts.forEach(function(post){
+                  if(post.hasOwnProperty("files")){
+                    post.urls=[]
+                    post.files.forEach(function(file){
+                      post.urls.push(file.replace(data.datapath, data.urlbase))
+                    })
+                  }
+                })
                 this.posts = this.posts.sort(function(a,b){
                   // Turn your strings into dates, and then subtract them
                   // to get a value that is either negative, positive, or zero.
-                  //console.log(sort_field,sort_order)
-                  //console.log(a.assignment[sort_field],b.assignment[sort_field])
+                  ////console.log(sort_field,sort_order)
+                  ////console.log(a.assignment[sort_field],b.assignment[sort_field])
                   val= new Date(a[sort_field].$date) - new Date(b[sort_field].$date);
                   if (sort_order==="ascending"){
                       return val
@@ -194,10 +222,10 @@ const whatsapp_conversationApp = new Vue({
                   }
                 });
 
-                console.log(this.posts)
+                //console.log(this.posts)
             })
             .catch(response => {
-                console.log(response);
+                //console.log(response);
             });
         },
         setPages () {
@@ -251,15 +279,23 @@ const whatsapp_profileApp = new Vue({
                     config: { headers: {'Content-Type': 'application/json' }}
             })
             .then(response => {
-                console.log(response.data)
+                //console.log(response.data)
                 this.posts = response.data.resp;
                 sort_field = "updated_timestamp"
                 sort_order = "descending"
+                this.posts.forEach(function(post){
+                  if(post.hasOwnProperty("files")){
+                    post.urls=[]
+                    post.files.forEach(function(file){
+                      post.urls.push(file.replace(data.datapath, data.urlbase))
+                    })
+                  }
+                })
                 this.posts = this.posts.sort(function(a,b){
                   // Turn your strings into dates, and then subtract them
                   // to get a value that is either negative, positive, or zero.
-                  //console.log(sort_field,sort_order)
-                  //console.log(a.assignment[sort_field],b.assignment[sort_field])
+                  ////console.log(sort_field,sort_order)
+                  ////console.log(a.assignment[sort_field],b.assignment[sort_field])
                   val= new Date(a[sort_field].$date) - new Date(b[sort_field].$date);
                   if (sort_order==="ascending"){
                       return val
@@ -269,10 +305,10 @@ const whatsapp_profileApp = new Vue({
                   }
                 });
 
-                console.log(this.posts)
+                //console.log(this.posts)
             })
             .catch(response => {
-                console.log(response);
+                //console.log(response);
             });
         },
         setPages () {
@@ -310,31 +346,48 @@ const whatsapp_messageApp = new Vue({
     el: '#whatsapp_message-app',
     data: {
         posts: [],
-        baseUrl: 'http://'+serverip+':5000/whatsapp_message',
+        baseUrl: 'http://'+serverip+':5000/whatsapp_message/search',
         page: 1,
-        perPage: assperpage,
+        perPage: msgsperpage,
         pages: [],
     },
     methods: {
         getPosts () {
             //axios.get(this.baseUrl)
             axios({
-                    //method: 'post',
-                    method: 'get',
+                    method: 'post',
+                    //method: 'get',
                     url: this.baseUrl,
-                    //data: search_query,
+                    data: msg_search_query,
                     config: { headers: {'Content-Type': 'application/json' }}
             })
             .then(response => {
-                console.log(response.data)
+                // //console.log(response.data)
                 this.posts = response.data.resp;
-                sort_field = "created_timestamp"
-                sort_order = "descending"
+                console.log("Got messages")
+                sort_field = msg_sort_field
+                sort_order = msg_sort_order
+
+                console.log("url-izing posts")
+                this.posts.forEach(function(post){
+                  if(post.hasOwnProperty("files")){
+                    console.log(post.files)
+                    post.urls=[]
+                    post.files.forEach(function(file){
+                      post.urls.push(file.replace(response.data.datapath, response.data.urlbase))
+                      console.log(file)
+                    })
+                    console.log(post)
+
+                  }
+                })
+                console.log("sorting posts")
+
                 this.posts = this.posts.sort(function(a,b){
                   // Turn your strings into dates, and then subtract them
                   // to get a value that is either negative, positive, or zero.
-                  //console.log(sort_field,sort_order)
-                  //console.log(a.assignment[sort_field],b.assignment[sort_field])
+                  ////console.log(sort_field,sort_order)
+                  ////console.log(a.assignment[sort_field],b.assignment[sort_field])
                   val= new Date(a[sort_field].$date) - new Date(b[sort_field].$date);
                   if (sort_order==="ascending"){
                       return val
@@ -344,7 +397,8 @@ const whatsapp_messageApp = new Vue({
                   }
                 });
 
-                console.log(this.posts)
+
+                //console.log(this.posts)
             })
             .catch(response => {
                 console.log(response);

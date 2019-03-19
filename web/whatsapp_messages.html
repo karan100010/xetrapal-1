@@ -12,6 +12,7 @@
 
     <!-- Bootstrap core CSS -->
 <link href="dashboard_files/bootstrap.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://rawgit.com/tempusdominus/bootstrap-4/master/build/css/tempusdominus-bootstrap-4.css" />
 
   <link href="dist/css/pagination-style.css" rel="stylesheet">
     <style>
@@ -32,9 +33,10 @@
     </style>
     <!-- Custom styles for this template -->
     <link href="dashboard_files/dashboard.css" rel="stylesheet">
-  <style type="text/css">/* Chart.js */
-@-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}</style><script src="dashboard_files/prompt.js"></script></head>
+</head>
   <body>
+
+
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
   <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">क्षेत्रपाल|Xetrapal</a>
   <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
@@ -114,31 +116,115 @@
         <h1 class="h2">Whatsapp Messages</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group mr-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filter_messages()">Filter</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="export_messages()">Export</button>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            This week
-          </button>
         </div>
       </div>
-
       <div class="container" v-cloak>
         <div class="row">
-            <div class="col-sm-4 small-cols">
+            <div class="col-sm-2 small-cols">
+              <p class="text-right">Updated Time: </p >
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="updated_frm_dtpick" data-target-input="nearest">
+                        <input type="text" id="updated_frm" class="form-control datetimepicker-input" placeholder="Date From" data-target="#datetimepicker1" />
+                        <div class="input-group-append" data-target="#updated_frm_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="updated_to_dtpick" data-target-input="nearest">
+                        <input type="text" id="updated_to" class="form-control datetimepicker-input" placeholder="Date To" data-target="#datetimepicker2" />
+                        <div class="input-group-append" data-target="#updated_to_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 small-cols">
+              <p class="text-right">Created Time: </p >
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="created_frm_dtpick" data-target-input="nearest">
+                        <input type="text" id="created_frm" class="form-control datetimepicker-input" placeholder="Date From" data-target="#datetimepicker1" />
+                        <div class="input-group-append" data-target="#created_frm_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="created_to_dtpick" data-target-input="nearest">
+                        <input type="text" id="created_to" class="form-control datetimepicker-input" placeholder="Date To" data-target="#datetimepicker2" />
+                        <div class="input-group-append" data-target="#created_to_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 small-cols">
+              <p class="text-right">Observed Time: </p >
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="observed_frm_dtpick" data-target-input="nearest">
+                        <input type="text" id="observed_frm" class="form-control datetimepicker-input" placeholder="Date From" data-target="#datetimepicker1" />
+                        <div class="input-group-append" data-target="#observed_frm_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5 small-cols date-picker-wrap">
+                <div class="form-group">
+                    <div class="input-group date" id="observed_to_dtpick" data-target-input="nearest">
+                        <input type="text" id="observed_to" class="form-control datetimepicker-input" placeholder="Date To" data-target="#datetimepicker2" />
+                        <div class="input-group-append" data-target="#observed_to_dtpick" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 small-cols">
                  <p class="text-right">Sort By: </p >
              </div>
-             <div class="col-sm-4 small-cols">
-                 <select id="assign_sort" name="assign_sort" class="form-control" onchange="sortAssignments()">
+             <div class="col-sm-5 small-cols">
+                 <select id="msg_sort_field" name="assign_sort" class="form-control" onchange="filter_messages()">
+                     <option value="updated_timestamp">Updated Time</option>
                      <option value="created_timestamp">Created Time</option>
+                     <option value="observed_timestamp">Observed Time</option>
                               visibility: hidden;
                  </select>
              </div>
-            <div class="col-sm-4 small-cols">
-                 <select id="assign_order" name="assign_order" class="form-control" onchange="sortAssignments()">
+            <div class="col-sm-5 small-cols">
+                 <select id="msg_sort_order" name="assign_order" class="form-control" onchange="filter_messages()">
                      <option value="ascending" selected="selected">Ascending</option>
-                     <option value="descending">Descending</option>
+                     <option value="descending" selected="selected">Descending</option>
+                </select>
+             </div>
+        </div>
+        <div class="row">
+           <div class="col-sm-6 small-cols">
+                 <select id="observed_in" name="assign_sort" class="form-control" onchange="filter_messages()">
+                     <option value="" selected="selected">All Conversations</option>
+                 </select>
+             </div>
+            <div class="col-sm-6 small-cols">
+                 <select id="sent_by" name="assign_order" class="form-control" onchange="filter_messages()">
+                     <option value="" selected="selected">All Senders</option>
                  </select>
              </div>
         </div>
@@ -190,137 +276,7 @@
 
 
       </div>
-  <!--  <canvas class="my-4 w-100 chartjs-render-monitor" id="myChart" width="1040" height="439" style="display: block; width: 1040px; height: 439px;"></canvas> -->
-  <!--
-      <h2>Section title</h2>
-      <div class="table-responsive">
-        <table class="table table-striped table-sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Header</th>
-              <th>Header</th>
-              <th>Header</th>
-              <th>Header</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1,001</td>
-              <td>Lorem</td>
-              <td>ipsum</td>
-              <td>dolor</td>
-              <td>sit</td>
-            </tr>
-            <tr>
-              <td>1,002</td>
-              <td>amet</td>
-              <td>consectetur</td>
-              <td>adipiscing</td>
-              <td>elit</td>
-            </tr>
-            <tr>
-              <td>1,003</td>
-              <td>Integer</td>
-              <td>nec</td>
-              <td>odio</td>
-              <td>Praesent</td>
-            </tr>
-            <tr>
-              <td>1,003</td>
-              <td>libero</td>
-              <td>Sed</td>
-              <td>cursus</td>
-              <td>ante</td>
-            </tr>
-            <tr>
-              <td>1,004</td>
-              <td>dapibus</td>
-              <td>diam</td>
-              <td>Sed</td>
-              <td>nisi</td>
-            </tr>
-            <tr>
-              <td>1,005</td>
-              <td>Nulla</td>
-              <td>quis</td>
-              <td>sem</td>
-              <td>at</td>
-            </tr>
-            <tr>
-              <td>1,006</td>
-              <td>nibh</td>
-              <td>elementum</td>
-              <td>imperdiet</td>
-              <td>Duis</td>
-            </tr>
-            <tr>
-              <td>1,007</td>
-              <td>sagittis</td>
-              <td>ipsum</td>
-              <td>Praesent</td>
-              <td>mauris</td>
-            </tr>
-            <tr>
-              <td>1,008</td>
-              <td>Fusce</td>
-              <td>nec</td>
-              <td>tellus</td>
-              <td>sed</td>
-            </tr>
-            <tr>
-              <td>1,009</td>
-              <td>augue</td>
-              <td>semper</td>
-              <td>porta</td>
-              <td>Mauris</td>
-            </tr>
-            <tr>
-              <td>1,010</td>
-              <td>massa</td>
-              <td>Vestibulum</td>
-              <td>lacinia</td>
-              <td>arcu</td>
-            </tr>
-            <tr>
-              <td>1,011</td>
-              <td>eget</td>
-              <td>nulla</td>
-              <td>Class</td>
-              <td>aptent</td>
-            </tr>
-            <tr>
-              <td>1,012</td>
-              <td>taciti</td>
-              <td>sociosqu</td>
-              <td>ad</td>
-              <td>litora</td>
-            </tr>
-            <tr>
-              <td>1,013</td>
-              <td>torquent</td>
-              <td>per</td>
-              <td>conubia</td>
-              <td>nostra</td>
-            </tr>
-            <tr>
-              <td>1,014</td>
-              <td>per</td>
-              <td>inceptos</td>
-              <td>himenaeos</td>
-              <td>Curabitur</td>
-            </tr>
-            <tr>
-              <td>1,015</td>
-              <td>sodales</td>
-              <td>ligula</td>
-              <td>in</td>
-              <td>libero</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    -->
+
     </main>
   </div>
 </div>
@@ -328,12 +284,15 @@
 			  src="http://code.jquery.com/jquery-3.3.1.js"
 			  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 			  crossorigin="anonymous"></script>
+        <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+
+        <script type="text/javascript" src="https://rawgit.com/tempusdominus/bootstrap-4/master/build/js/tempusdominus-bootstrap-4.js"></script>
+
   <!--<script src="dashboard_files/jquery-3.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="/docs/4.3/assets/js/vendor/jquery-slim.min.js"><\/script>')</script><script src="dashboard_files/bootstrap.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o" crossorigin="anonymous"></script>
         <script src="dashboard_files/feather.js"></script>
          <script src="dashboard_files/Chart.js"></script>
       -->
-      <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
       <script src="dashboard_files/xetrapal.js"></script>
 
       <script src="dist/js/vue.min.js"></script>
@@ -341,12 +300,72 @@
       <script src="dist/js/pagination.js"></script>
 
         <script>
+            var msg_search_query = {}
+            var msg_sort_field = "created_timestamp"
+            var msg_sort_order = "descending"
+
+            const get_input = function(){
+              msg_sort_order = $("#msg_sort_order").val()
+              msg_sort_field = $("#msg_sort_field").val()
+              msg_search_query['created_timestamp__gt']=moment($("#created_frm").val()).valueOf()
+              msg_search_query['created_timestamp__lt']=moment($("#created_to").val()).valueOf()
+              msg_search_query['updated_timestamp__gt']=moment($("#updated_frm").val()).valueOf()
+              msg_search_query['updated_timestamp__lt']=moment($("#updated_to").val()).valueOf()
+              msg_search_query['observed_timestamp__gt']=moment($("#observed_frm").val()).valueOf()
+              msg_search_query['observed_timestamp__lt']=moment($("#observed_to").val()).valueOf()
+              msg_search_query['observed_in'] = $("#observed_in").val()
+              if (msg_search_query['observed_in'] === ""){
+                msg_search_query['observed_in'] = null;
+              }
+              msg_search_query['sent_by']=$("#sent_by").val()
+              if (msg_search_query['sent_by'] === ""){
+                msg_search_query['sent_by'] = null;
+              }
+            }
+            const export_messages = function(){
+              get_input()
+              params=JSON.stringify(msg_search_query)
+              var url = "http://"+serverip+":5000/whatsapp_message/export";
+              var http = new XMLHttpRequest();
+              http.open("POST", url, true);
+              http.setRequestHeader("Content-type", "application/json");
+              http.onreadystatechange = function() {//Call a function when the state changes.
+                  if(http.readyState == 4 && http.status == 200) {
+                      response=JSON.parse(http.responseText)
+                      console.log(response)
+                      if (response.status==="success"){
+                          window.open(response.resp[0].replace(response.datapath, response.urlbase),"_blank")
+
+                      }
+                      else{
+                          alert("Something went wrong!")
+                      }
+
+                  }
+
+              }
+              http.send(params);
+            }
+            const filter_messages = function(){
+              get_input()
+              console.log("refreshing messages \n ", JSON.stringify(msg_search_query), JSON.stringify(msg_sort_field), JSON.stringify(msg_sort_order))
+              whatsapp_messageApp.getPosts();
+            }
           	$(document).ready(function(){
-                  xetrapal.load_dashboard();
-            })
+                  //xetrapal.load_dashboard();
+                  xetrapal.get_whatsapp_conversations();
+                  xetrapal.get_whatsapp_profiles();
+            });
+            $(".date").datetimepicker({format: 'YYYY-MM-DD HH:mm'});
 
         </script>
 
+        <script>
+          /*  $('#datetimepicker1').datetimepicker({format: 'YYYY-MM-DD HH:mm'});
+            $('#datetimepicker2').datetimepicker({format: 'YYYY-MM-DD HH:mm'});
+            $('#datetimepicker3').datetimepicker({format: 'YYYY-MM-DD HH:mm'});*/
+
+        </script>
 
 
 </body></html>

@@ -153,7 +153,7 @@
                   <div class="container">
                     <div class="row">
                       <div class="col-lg-12">
-                          {{post.files}}
+                          {{JSON.stringify(post)}}
                           <div class="row">
                           <div class="col-lg-3 mb-3 pt-3" v-for="url in post.urls">
                             <img v-if="url.includes('.png')" v-bind:src="url" style="max-height: 250px; max-width: 250px"></img>
