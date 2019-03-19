@@ -314,7 +314,7 @@ def wa_get_conv_messages(conversation=None, historical=False,  scrolls=2, wabrow
 
     for msg in messages:
         if type(msg) == str:
-            messages.pop(msg)
+            messages.remove(msg)
         else:
             msg.observed_in = conversation
             msg.save()
@@ -456,7 +456,6 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
                 karma.wait(logger=logger, waittime="short")
         sender_wa_profile = None
         logger.info("Trying to create profile with dict {}".format(msgdict['sender']))
-            # try:
         sender_wa_profile = wa_add_profile_smriti(msgdict['sender'], logger=logger)
         if type(sender_wa_profile) == list and sender_wa_profile != []:
             sender_wa_profile = sender_wa_profile[0]
@@ -466,9 +465,12 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
         if type(msg) == list and msg != []:
             msg = msg[0]
             if sender_wa_profile is not None:
-                msg.sent_by = sender_wa_profile
-                msg.save()
-                msg.reload()
+                try:
+                    msg.sent_by = sender_wa_profile
+                    msg.save()
+                    msg.reload()
+                except Exception as e:
+                    logger.error("Could not add sender profile {} to msg {}".format(sender_wa_profile, msg))
             return msg
     except Exception as e:
         logger.error("{} {}".format(type(e), str(e)))
