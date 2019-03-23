@@ -377,8 +377,10 @@ def wa_get_msg_dict(line=None, wabrowser=None, logger=astra.baselogger, **kwargs
     messagein = line.find_elements_by_xpath(WAWCLASSMAP['message-in'])
     messageout = line.find_elements_by_xpath(WAWCLASSMAP['message-out'])
     messages = messagein+messageout
+    if len(messageout) + len(messagein) == 0:
+        return "error: No message in line"
     if len(messageout) > 0:
-        msgdict['sender']['self'] = True
+        msgdict['sender']['is_self'] = True
     for message in messages:
         sender = message.find_elements_by_xpath(WAWCLASSMAP['convpane-item-sender'])
         msgdict['sender']['senderlines'] = [c.text.split("\n") for c in sender]
@@ -409,7 +411,7 @@ def wa_get_msg_dict(line=None, wabrowser=None, logger=astra.baselogger, **kwargs
         images = message.find_elements_by_tag_name("img")
         msgdict['images'] = ["image: " + c.get_attribute("src") for c in images]
         links = message.find_elements_by_tag_name("a")
-        msgdict['links'] = ["link: "+c.text for c in links]
+        msgdict['links'] = [{"link_text": c.text, "link_url": c.get_attribute("href")} for c in links]
         replyto = message.find_elements_by_xpath(WAWCLASSMAP['reply-to'])
         msgdict['reply_to'] = ["reply-to: "+c.text for x in replyto]
 
@@ -424,13 +426,15 @@ def wa_get_msg_dict(line=None, wabrowser=None, logger=astra.baselogger, **kwargs
                 msgdict['created_timestamp'] = msgdict['created_timestamp'].replace(hour=tstime.hour, minute=tstime.minute, second=0, microsecond=0)
             except Exception as e:
                 print(e)
-        msgdict['text_lines'] = list(set(msgdict['copyable_text']+msgdict['selectable_text']+msgdict['links']+msgdict['images']+msgdict['reply_to']))
+        msgdict['text_lines'] = list(set(msgdict['copyable_text']+msgdict['selectable_text']+[m['link_text'] for m in msgdict['links']]+msgdict['images']+msgdict['reply_to']))
         return msgdict
 
 
 def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs):
     try:
         msgdict = wa_get_msg_dict(line=line, wabrowser=wabrowser, logger=logger)
+        if type(msgdict) != dict:
+            return msgdict
         logger.info("{}".format(msgdict))
         msg = wa_get_message_smriti(msgdict, logger=logger)
         if type(msg) == list and msg != []:
@@ -470,7 +474,7 @@ def wa_get_message(line=None, wabrowser=None, logger=astra.baselogger, **kwargs)
                     msg.save()
                     msg.reload()
                 except Exception as e:
-                    logger.error("Could not add sender profile {} to msg {}".format(sender_wa_profile, msg))
+                    logger.error("Could not add sender profile {} to msg {} because {} {}".format(sender_wa_profile, msg, type(e), str(e)))
             return msg
     except Exception as e:
         logger.error("{} {}".format(type(e), str(e)))
@@ -542,7 +546,7 @@ def wa_get_cur_conv_messages(historical=False, scrolls=2, wabrowser=None, logger
         lines = wa_get_element("convpane-item", multi=True, wabrowser=wabrowser, logger=logger)
         for line in lines:
             msg = wa_get_message(line=line, wabrowser=wabrowser, logger=logger)
-            if msg is not None:
+            if msg is not None and type(msg) != str:
                 msgs.append(msg)
         newnumlines = len(lines)
         if historical is not True:

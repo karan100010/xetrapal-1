@@ -38,7 +38,6 @@ apixpal = Xetrapal(apismriti)
 apixpal.dhaarana(wakarmas)
 
 
-
 class ApiResource(Resource):
     def get(self, command=None):
         status = "success"
@@ -166,7 +165,7 @@ class WhatsappMessageResource(Resource):
                 respdict.pop(key)
             elif "timestamp" in key:
                 apixpal.logger.info("Setting timestamp {}".format(respdict[key]))
-                respdict[key] = aadhaar.get_utc_ts(datetime.datetime.fromtimestamp(float(respdict[key]/1000)).replace(microsecond=0))
+                respdict[key] = aadhaar.get_utc_ts(datetime.datetime.fromtimestamp(float(respdict[key])/1000).replace(microsecond=0))
         if command is None:
             try:
                 status = "success"

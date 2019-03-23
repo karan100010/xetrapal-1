@@ -248,6 +248,7 @@
                         <p>
                           <hr>
                           {{post.files}}
+                          {{post.links}}
                           <div class="row">
                           <div class="col-lg-3 mb-3 pt-3" v-for="url in post.urls">
                             <img v-if="url.includes('.jpeg')" v-bind:src="url" style="max-height: 250px; max-width: 250px"></img>
